@@ -2,6 +2,32 @@
 
 Арты генерируются через ChatGPT DALL-E 3.
 
+## Быстрая генерация ассетов в этом репозитории (автоматически)
+
+В репозитории есть скрипт `scripts/generate_assets.py`, который генерирует и кладёт файлы прямо в bundle:
+
+- `SearchGame/Resources/Generated/bg_farm_day.png`
+- `SearchGame/Resources/Generated/duck.png`
+
+Дальше игра автоматически подхватит эти файлы (и перестанет показывать процедурный фон/утку).
+
+### Как запустить (macOS, из Cursor)
+
+```bash
+cd /Users/miguel/searchgame
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+# открой .env и вставь OPENAI_API_KEY
+python scripts/generate_assets.py
+```
+
+## Имена файлов (важно)
+
+- Фон дневной сцены: **bg_farm_day.png**
+- Спрайт утки: **duck.png** (желательно PNG с прозрачностью)
+
 ## Фоновые изображения
 
 ### Светлая сцена (детская ферма)

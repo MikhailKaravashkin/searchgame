@@ -14,6 +14,7 @@
 		615D16CF197DB7C693BB4525 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2902A8C4A6E4F432B99E87 /* GameScene.swift */; };
 		960974546C482187E14C383E /* LevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A920825DE71C0AECCCE9E8CE /* LevelTests.swift */; };
 		9BB02C78C5BFFD79F6130B03 /* Level.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF1D412C8E3CC80AB42EF0B /* Level.swift */; };
+		D95738873B6EBDC03BE16A1E /* AssetLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80566315B65DC7DA6DB95497 /* AssetLoader.swift */; };
 		F57E69E0A180095CAAF6B2A6 /* SearchGameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A895C8F7E61B99EA70698214 /* SearchGameApp.swift */; };
 /* End PBXBuildFile section */
 
@@ -37,8 +38,10 @@
 /* Begin PBXFileReference section */
 		0D54DA925C8E1E3BAD7192CF /* SearchGameUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SearchGameUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3C94473CCA804FFCAC7BFB03 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets.xcassets; path = SearchGame/Resources/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		4FA0F5253F0366AE61BBB24B /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		6384C22B3CECF7991CF54727 /* SearchGameTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SearchGameTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FF1D412C8E3CC80AB42EF0B /* Level.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level.swift; sourceTree = "<group>"; };
+		80566315B65DC7DA6DB95497 /* AssetLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLoader.swift; sourceTree = "<group>"; };
 		9EDDADCF0804DEDD54267D28 /* SearchableItemNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableItemNode.swift; sourceTree = "<group>"; };
 		A895C8F7E61B99EA70698214 /* SearchGameApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchGameApp.swift; sourceTree = "<group>"; };
 		A920825DE71C0AECCCE9E8CE /* LevelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelTests.swift; sourceTree = "<group>"; };
@@ -61,6 +64,7 @@
 		1B5FF6009DF61F2F6A7863B4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				EDC2D0F255E30950DF3D22B9 /* Generated */,
 				D8A08156495EEEB5494D68EA /* Levels */,
 			);
 			path = Resources;
@@ -75,6 +79,14 @@
 				C581A933C83C8BE14D4811CB /* SearchGameUITests */,
 				BAE67173750844EE300620A4 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		435FFB0A5D03AC5EA16E0546 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				80566315B65DC7DA6DB95497 /* AssetLoader.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 		6ACC2C919917D30D4027439B /* App */ = {
@@ -94,6 +106,7 @@
 				D38B6C493A68D3702334217E /* Nodes */,
 				1B5FF6009DF61F2F6A7863B4 /* Resources */,
 				B35997CC6050C9CE70BBE235 /* Scenes */,
+				435FFB0A5D03AC5EA16E0546 /* Utils */,
 			);
 			path = SearchGame;
 			sourceTree = "<group>";
@@ -146,6 +159,14 @@
 				AF89DB305137626A5E1EDCD7 /* .gitkeep */,
 			);
 			path = Levels;
+			sourceTree = "<group>";
+		};
+		EDC2D0F255E30950DF3D22B9 /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				4FA0F5253F0366AE61BBB24B /* .gitkeep */,
+			);
+			path = Generated;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -272,6 +293,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D95738873B6EBDC03BE16A1E /* AssetLoader.swift in Sources */,
 				615D16CF197DB7C693BB4525 /* GameScene.swift in Sources */,
 				018A390EDB6F36E40BCE3FD7 /* GameViewController.swift in Sources */,
 				9BB02C78C5BFFD79F6130B03 /* Level.swift in Sources */,

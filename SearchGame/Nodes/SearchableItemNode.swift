@@ -17,8 +17,11 @@ class SearchableItemNode: SKSpriteNode {
     init(type: String, texture: SKTexture? = nil) {
         self.itemType = type
         
-        // Use placeholder if no texture provided
-        let nodeTexture = texture ?? SearchableItemNode.createPlaceholderTexture(for: type)
+        // Prefer generated/real art if present in bundle, fallback to procedural placeholder.
+        let nodeTexture =
+            texture
+            ?? AssetLoader.texture(named: type)
+            ?? SearchableItemNode.createPlaceholderTexture(for: type)
         let size = CGSize(width: 64, height: 64)
         
         super.init(texture: nodeTexture, color: .clear, size: size)

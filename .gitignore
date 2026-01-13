@@ -58,3 +58,6 @@ playground.xcworkspace
 
 # Cursor
 .cursor/
+
+# local env
+.env

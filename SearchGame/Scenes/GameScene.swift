@@ -42,8 +42,19 @@ class GameScene: SKScene {
     }
     
     private func setupBackground() {
+        // Prefer generated/real art if present in bundle, fallback to procedural scene.
+        if let tex = AssetLoader.texture(named: "bg_farm_day") {
+            let backgroundSize = tex.size()
+            backgroundNode = SKSpriteNode(texture: tex, size: backgroundSize)
+            backgroundNode.position = CGPoint(x: backgroundSize.width / 2, y: backgroundSize.height / 2)
+            backgroundNode.zPosition = -100
+            addChild(backgroundNode)
+            calculateCameraBounds()
+            return
+        }
+
         let backgroundSize = CGSize(width: 2048, height: 1536)
-        
+
         // Create beautiful gradient background
         backgroundNode = SKSpriteNode(texture: createGradientTexture(size: backgroundSize), size: backgroundSize)
         backgroundNode.position = CGPoint(x: backgroundSize.width / 2, y: backgroundSize.height / 2)
