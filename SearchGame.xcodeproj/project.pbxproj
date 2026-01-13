@@ -13,6 +13,7 @@
 		2DEBB09CE5BDA713C25332CB /* SearchGameUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B901139ADAD394A63CE95FF4 /* SearchGameUITests.swift */; };
 		38CC4D18114C11118A60B9C0 /* Generated in Resources */ = {isa = PBXBuildFile; fileRef = C2CD9CACA7EF1A2FCE63970C /* Generated */; };
 		615D16CF197DB7C693BB4525 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2902A8C4A6E4F432B99E87 /* GameScene.swift */; };
+		7C4855EC65D629A1FF24CA05 /* bg_farm_day.png in Resources */ = {isa = PBXBuildFile; fileRef = 05C8AD29F2804F9D4A9349BF /* bg_farm_day.png */; };
 		960974546C482187E14C383E /* LevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A920825DE71C0AECCCE9E8CE /* LevelTests.swift */; };
 		9BB02C78C5BFFD79F6130B03 /* Level.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF1D412C8E3CC80AB42EF0B /* Level.swift */; };
 		D95738873B6EBDC03BE16A1E /* AssetLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80566315B65DC7DA6DB95497 /* AssetLoader.swift */; };
@@ -37,6 +38,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		05C8AD29F2804F9D4A9349BF /* bg_farm_day.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bg_farm_day.png; sourceTree = "<group>"; };
 		0D54DA925C8E1E3BAD7192CF /* SearchGameUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SearchGameUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3C94473CCA804FFCAC7BFB03 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets.xcassets; path = SearchGame/Resources/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		4FA0F5253F0366AE61BBB24B /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
@@ -168,6 +170,7 @@
 			isa = PBXGroup;
 			children = (
 				4FA0F5253F0366AE61BBB24B /* .gitkeep */,
+				05C8AD29F2804F9D4A9349BF /* bg_farm_day.png */,
 			);
 			path = Generated;
 			sourceTree = "<group>";
@@ -271,6 +274,7 @@
 			files = (
 				1271B2E7345C2F888D8102B0 /* Assets.xcassets in Resources */,
 				38CC4D18114C11118A60B9C0 /* Generated in Resources */,
+				7C4855EC65D629A1FF24CA05 /* bg_farm_day.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

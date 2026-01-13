@@ -30,14 +30,3 @@ python scripts/generate_assets.py
 ## Через MCP (из Cursor)
 
 MCP сервер тоже читает `.env`, поэтому после шага 1 можно просто вызвать tool `generate_assets` в Cursor Chat.
-
-## Через Keychain (опционально)
-
-Если не хочешь хранить ключ в файле, используй Keychain:
-
-```bash
-export OPENAI_API_KEY="..."
-./scripts/store_openai_key_in_keychain.sh
-```
-
-Подробнее в `docs/MCP_ASSETS.md`.

@@ -62,7 +62,7 @@ This is intentionally REST-based to avoid SDK churn.
 """
 
     api_key = _env("OPENAI_API_KEY")
-    model = os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-1")
+    model = os.getenv("OPENAI_IMAGE_MODEL", "dall-e-3")
 
     url = "https://api.openai.com/v1/images/generations"
     headers = {
@@ -77,9 +77,8 @@ This is intentionally REST-based to avoid SDK churn.
         "n": 1,
     }
 
-    # Many image models support this; if unsupported, API will ignore or error.
-    if transparent:
-        payload["background"] = "transparent"
+    # DALL-E 3 doesn't support transparent backgrounds natively
+    # We'll post-process with remove_near_white_background instead
 
     r = requests.post(url, headers=headers, data=json.dumps(payload), timeout=120)
     if r.status_code >= 400:
@@ -151,10 +150,8 @@ def main() -> None:
             size="1024x1024",
             transparent=True,
             prompt=(
-                "Single cute rubber duck, game asset sprite, side view profile, "
-                "classic yellow color with orange beak, soft studio lighting, "
-                "kawaii style, clean simple design, "
-                "no text, no watermark"
+                "A single yellow rubber duck toy on white background, "
+                "side view, simple cute design, game sprite"
             ),
         ),
     ]
