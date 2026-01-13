@@ -19,7 +19,7 @@ class SearchableItemNode: SKSpriteNode {
         
         // Use placeholder if no texture provided
         let nodeTexture = texture ?? SearchableItemNode.createPlaceholderTexture(for: type)
-        let size = CGSize(width: 80, height: 80)
+        let size = CGSize(width: 64, height: 64)
         
         super.init(texture: nodeTexture, color: .clear, size: size)
         
@@ -37,36 +37,70 @@ class SearchableItemNode: SKSpriteNode {
     // MARK: - Placeholder
     
     private static func createPlaceholderTexture(for type: String) -> SKTexture {
-        let size = CGSize(width: 80, height: 80)
+        let size = CGSize(width: 64, height: 64)
         
-        UIGraphicsBeginImageContextWithOptions(size, false, 0)
+        UIGraphicsBeginImageContextWithOptions(size, false, 2.0)
         guard let context = UIGraphicsGetCurrentContext() else {
             UIGraphicsEndImageContext()
             return SKTexture()
         }
         
-        // Draw circle background
-        let rect = CGRect(origin: .zero, size: size).insetBy(dx: 4, dy: 4)
-        context.setFillColor(UIColor.systemYellow.cgColor)
-        context.fillEllipse(in: rect)
+        let centerX = size.width / 2
+        let centerY = size.height / 2
         
-        // Draw border
-        context.setStrokeColor(UIColor.systemOrange.cgColor)
-        context.setLineWidth(3)
-        context.strokeEllipse(in: rect)
+        // Duck body - soft yellow ellipse
+        let bodyColor = UIColor(red: 1.0, green: 0.85, blue: 0.35, alpha: 1.0)
+        let bodyRect = CGRect(x: centerX - 22, y: centerY - 12, width: 44, height: 32)
+        context.setFillColor(bodyColor.cgColor)
+        context.fillEllipse(in: bodyRect)
         
-        // Draw emoji
-        let emoji = "🦆"
-        let font = UIFont.systemFont(ofSize: 40)
-        let attributes: [NSAttributedString.Key: Any] = [.font: font]
-        let textSize = emoji.size(withAttributes: attributes)
-        let textRect = CGRect(
-            x: (size.width - textSize.width) / 2,
-            y: (size.height - textSize.height) / 2,
-            width: textSize.width,
-            height: textSize.height
-        )
-        emoji.draw(in: textRect, withAttributes: attributes)
+        // Duck body shadow/depth
+        let shadowColor = UIColor(red: 0.95, green: 0.75, blue: 0.25, alpha: 0.5)
+        let shadowRect = CGRect(x: centerX - 18, y: centerY - 8, width: 36, height: 20)
+        context.setFillColor(shadowColor.cgColor)
+        context.fillEllipse(in: shadowRect.offsetBy(dx: 0, dy: 6))
+        
+        // Duck head
+        let headRect = CGRect(x: centerX + 8, y: centerY + 4, width: 24, height: 24)
+        context.setFillColor(bodyColor.cgColor)
+        context.fillEllipse(in: headRect)
+        
+        // Beak
+        let beakColor = UIColor(red: 1.0, green: 0.55, blue: 0.20, alpha: 1.0)
+        context.setFillColor(beakColor.cgColor)
+        let beakPath = CGMutablePath()
+        beakPath.move(to: CGPoint(x: centerX + 30, y: centerY + 14))
+        beakPath.addLine(to: CGPoint(x: centerX + 42, y: centerY + 16))
+        beakPath.addLine(to: CGPoint(x: centerX + 30, y: centerY + 20))
+        beakPath.closeSubpath()
+        context.addPath(beakPath)
+        context.fillPath()
+        
+        // Eye
+        context.setFillColor(UIColor(red: 0.15, green: 0.15, blue: 0.15, alpha: 1.0).cgColor)
+        context.fillEllipse(in: CGRect(x: centerX + 22, y: centerY + 18, width: 5, height: 5))
+        
+        // Eye highlight
+        context.setFillColor(UIColor.white.cgColor)
+        context.fillEllipse(in: CGRect(x: centerX + 23, y: centerY + 19, width: 2, height: 2))
+        
+        // Wing hint
+        let wingColor = UIColor(red: 0.95, green: 0.78, blue: 0.30, alpha: 0.7)
+        context.setFillColor(wingColor.cgColor)
+        let wingRect = CGRect(x: centerX - 10, y: centerY - 2, width: 20, height: 14)
+        context.fillEllipse(in: wingRect)
+        
+        // Tail feathers
+        context.setFillColor(bodyColor.cgColor)
+        let tailPath = CGMutablePath()
+        tailPath.move(to: CGPoint(x: centerX - 22, y: centerY))
+        tailPath.addLine(to: CGPoint(x: centerX - 30, y: centerY + 8))
+        tailPath.addLine(to: CGPoint(x: centerX - 26, y: centerY + 4))
+        tailPath.addLine(to: CGPoint(x: centerX - 32, y: centerY + 2))
+        tailPath.addLine(to: CGPoint(x: centerX - 22, y: centerY - 4))
+        tailPath.closeSubpath()
+        context.addPath(tailPath)
+        context.fillPath()
         
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()

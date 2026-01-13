@@ -42,51 +42,259 @@ class GameScene: SKScene {
     }
     
     private func setupBackground() {
-        // Placeholder background - will be replaced with actual art
         let backgroundSize = CGSize(width: 2048, height: 1536)
-        backgroundNode = SKSpriteNode(color: SKColor(red: 0.2, green: 0.3, blue: 0.2, alpha: 1.0), size: backgroundSize)
+        
+        // Create beautiful gradient background
+        backgroundNode = SKSpriteNode(texture: createGradientTexture(size: backgroundSize), size: backgroundSize)
         backgroundNode.position = CGPoint(x: backgroundSize.width / 2, y: backgroundSize.height / 2)
         backgroundNode.zPosition = -100
         addChild(backgroundNode)
         
-        // Add placeholder pattern to show scrolling works
-        addPlaceholderPattern()
+        // Add scenic elements
+        addScenicElements()
         
         // Calculate camera bounds
         calculateCameraBounds()
     }
     
-    private func addPlaceholderPattern() {
-        let gridSize: CGFloat = 200
-        let backgroundSize = backgroundNode.size
-        
-        for x in stride(from: gridSize, to: backgroundSize.width, by: gridSize) {
-            for y in stride(from: gridSize, to: backgroundSize.height, by: gridSize) {
-                let dot = SKShapeNode(circleOfRadius: 5)
-                dot.fillColor = SKColor(white: 1.0, alpha: 0.2)
-                dot.strokeColor = .clear
-                dot.position = CGPoint(x: x - backgroundSize.width / 2, y: y - backgroundSize.height / 2)
-                dot.zPosition = -99
-                backgroundNode.addChild(dot)
-            }
+    private func createGradientTexture(size: CGSize) -> SKTexture {
+        UIGraphicsBeginImageContextWithOptions(size, true, 1.0)
+        guard let context = UIGraphicsGetCurrentContext() else {
+            UIGraphicsEndImageContext()
+            return SKTexture()
         }
         
-        // Add text showing this is placeholder
-        let label = SKLabelNode(fontNamed: "Helvetica-Bold")
-        label.text = "Placeholder Background"
-        label.fontSize = 48
-        label.fontColor = SKColor(white: 1.0, alpha: 0.3)
-        label.position = .zero
-        label.zPosition = -98
-        backgroundNode.addChild(label)
+        // Sky gradient (top to middle)
+        let skyColors = [
+            UIColor(red: 0.53, green: 0.81, blue: 0.92, alpha: 1.0).cgColor,  // Light sky blue
+            UIColor(red: 0.69, green: 0.88, blue: 0.90, alpha: 1.0).cgColor,  // Pale turquoise
+            UIColor(red: 0.98, green: 0.91, blue: 0.71, alpha: 1.0).cgColor   // Warm horizon
+        ]
+        let skyGradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: skyColors as CFArray, locations: [0.0, 0.5, 1.0])!
+        context.drawLinearGradient(skyGradient, start: CGPoint(x: 0, y: size.height), end: CGPoint(x: 0, y: size.height * 0.35), options: [])
         
-        let sublabel = SKLabelNode(fontNamed: "Helvetica")
-        sublabel.text = "Pan to scroll • Tap items to find"
-        sublabel.fontSize = 24
-        sublabel.fontColor = SKColor(white: 1.0, alpha: 0.3)
-        sublabel.position = CGPoint(x: 0, y: -40)
-        sublabel.zPosition = -98
-        backgroundNode.addChild(sublabel)
+        // Ground gradient (middle to bottom)
+        let groundColors = [
+            UIColor(red: 0.56, green: 0.74, blue: 0.56, alpha: 1.0).cgColor,  // Soft green
+            UIColor(red: 0.42, green: 0.63, blue: 0.42, alpha: 1.0).cgColor,  // Medium green
+            UIColor(red: 0.33, green: 0.52, blue: 0.33, alpha: 1.0).cgColor   // Darker green
+        ]
+        let groundGradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: groundColors as CFArray, locations: [0.0, 0.5, 1.0])!
+        context.drawLinearGradient(groundGradient, start: CGPoint(x: 0, y: size.height * 0.4), end: CGPoint(x: 0, y: 0), options: [])
+        
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return SKTexture(image: image ?? UIImage())
+    }
+    
+    private func addScenicElements() {
+        let bgSize = backgroundNode.size
+        
+        // Add clouds
+        addClouds(in: bgSize)
+        
+        // Add hills in background
+        addHills(in: bgSize)
+        
+        // Add trees
+        addTrees(in: bgSize)
+        
+        // Add flowers
+        addFlowers(in: bgSize)
+        
+        // Add pond
+        addPond(in: bgSize)
+    }
+    
+    private func addClouds(in size: CGSize) {
+        let cloudPositions: [(x: CGFloat, y: CGFloat, scale: CGFloat)] = [
+            (200, size.height - 150, 1.0),
+            (600, size.height - 200, 0.7),
+            (1000, size.height - 120, 1.2),
+            (1400, size.height - 180, 0.8),
+            (1800, size.height - 140, 1.1)
+        ]
+        
+        for (x, y, scale) in cloudPositions {
+            let cloud = createCloud()
+            cloud.position = CGPoint(x: x - size.width / 2, y: y - size.height / 2)
+            cloud.setScale(scale)
+            cloud.zPosition = -95
+            backgroundNode.addChild(cloud)
+            
+            // Gentle floating animation
+            let moveUp = SKAction.moveBy(x: 0, y: 10, duration: Double.random(in: 3...5))
+            let moveDown = SKAction.moveBy(x: 0, y: -10, duration: Double.random(in: 3...5))
+            cloud.run(SKAction.repeatForever(SKAction.sequence([moveUp, moveDown])))
+        }
+    }
+    
+    private func createCloud() -> SKNode {
+        let cloud = SKNode()
+        let circleRadii: [(x: CGFloat, y: CGFloat, r: CGFloat)] = [
+            (0, 0, 40), (-35, -5, 30), (35, -5, 30), (-20, 15, 25), (20, 15, 25)
+        ]
+        
+        for (x, y, r) in circleRadii {
+            let circle = SKShapeNode(circleOfRadius: r)
+            circle.fillColor = SKColor(white: 1.0, alpha: 0.9)
+            circle.strokeColor = .clear
+            circle.position = CGPoint(x: x, y: y)
+            cloud.addChild(circle)
+        }
+        return cloud
+    }
+    
+    private func addHills(in size: CGSize) {
+        // Background hills
+        let hillColors: [SKColor] = [
+            SKColor(red: 0.45, green: 0.65, blue: 0.45, alpha: 0.6),
+            SKColor(red: 0.50, green: 0.70, blue: 0.50, alpha: 0.7),
+            SKColor(red: 0.55, green: 0.72, blue: 0.55, alpha: 0.8)
+        ]
+        
+        let hillData: [(xOffset: CGFloat, width: CGFloat, height: CGFloat, colorIndex: Int)] = [
+            (300, 600, 200, 0),
+            (800, 500, 180, 1),
+            (1400, 700, 220, 0),
+            (1900, 550, 190, 2)
+        ]
+        
+        for (xOffset, width, height, colorIndex) in hillData {
+            let hill = SKShapeNode(ellipseOf: CGSize(width: width, height: height))
+            hill.fillColor = hillColors[colorIndex]
+            hill.strokeColor = .clear
+            hill.position = CGPoint(x: xOffset - size.width / 2, y: size.height * 0.35 - size.height / 2)
+            hill.zPosition = -90
+            backgroundNode.addChild(hill)
+        }
+    }
+    
+    private func addTrees(in size: CGSize) {
+        let treePositions: [CGFloat] = [150, 450, 750, 1100, 1500, 1850]
+        
+        for x in treePositions {
+            let tree = createTree()
+            let y = CGFloat.random(in: (size.height * 0.15)...(size.height * 0.35))
+            tree.position = CGPoint(x: x - size.width / 2, y: y - size.height / 2)
+            tree.zPosition = -80 + CGFloat.random(in: 0...5)
+            tree.setScale(CGFloat.random(in: 0.8...1.2))
+            backgroundNode.addChild(tree)
+        }
+    }
+    
+    private func createTree() -> SKNode {
+        let tree = SKNode()
+        
+        // Trunk
+        let trunk = SKShapeNode(rectOf: CGSize(width: 20, height: 60), cornerRadius: 5)
+        trunk.fillColor = SKColor(red: 0.55, green: 0.35, blue: 0.20, alpha: 1.0)
+        trunk.strokeColor = .clear
+        trunk.position = CGPoint(x: 0, y: 30)
+        tree.addChild(trunk)
+        
+        // Foliage layers
+        let foliageColors = [
+            SKColor(red: 0.30, green: 0.55, blue: 0.30, alpha: 1.0),
+            SKColor(red: 0.35, green: 0.60, blue: 0.35, alpha: 1.0),
+            SKColor(red: 0.40, green: 0.65, blue: 0.40, alpha: 1.0)
+        ]
+        
+        let foliageData: [(y: CGFloat, radius: CGFloat, colorIndex: Int)] = [
+            (70, 50, 0), (95, 40, 1), (115, 30, 2)
+        ]
+        
+        for (y, radius, colorIndex) in foliageData {
+            let foliage = SKShapeNode(circleOfRadius: radius)
+            foliage.fillColor = foliageColors[colorIndex]
+            foliage.strokeColor = .clear
+            foliage.position = CGPoint(x: 0, y: y)
+            tree.addChild(foliage)
+        }
+        
+        // Add gentle sway animation
+        let swayRight = SKAction.rotate(byAngle: 0.02, duration: 2.0)
+        let swayLeft = SKAction.rotate(byAngle: -0.02, duration: 2.0)
+        tree.run(SKAction.repeatForever(SKAction.sequence([swayRight, swayLeft, swayLeft, swayRight])))
+        
+        return tree
+    }
+    
+    private func addFlowers(in size: CGSize) {
+        let flowerColors: [SKColor] = [
+            SKColor(red: 1.0, green: 0.75, blue: 0.80, alpha: 1.0),   // Pink
+            SKColor(red: 1.0, green: 0.95, blue: 0.70, alpha: 1.0),   // Yellow
+            SKColor(red: 0.85, green: 0.75, blue: 1.0, alpha: 1.0),   // Lavender
+            SKColor(red: 1.0, green: 0.85, blue: 0.70, alpha: 1.0)    // Peach
+        ]
+        
+        for _ in 0..<40 {
+            let flower = createFlower(color: flowerColors.randomElement()!)
+            let x = CGFloat.random(in: 50...(size.width - 50))
+            let y = CGFloat.random(in: 50...(size.height * 0.25))
+            flower.position = CGPoint(x: x - size.width / 2, y: y - size.height / 2)
+            flower.zPosition = -70
+            flower.setScale(CGFloat.random(in: 0.5...1.0))
+            backgroundNode.addChild(flower)
+        }
+    }
+    
+    private func createFlower(color: SKColor) -> SKNode {
+        let flower = SKNode()
+        
+        // Petals
+        for i in 0..<5 {
+            let petal = SKShapeNode(ellipseOf: CGSize(width: 12, height: 20))
+            petal.fillColor = color
+            petal.strokeColor = .clear
+            let angle = CGFloat(i) * (2 * .pi / 5)
+            petal.position = CGPoint(x: cos(angle) * 8, y: sin(angle) * 8)
+            petal.zRotation = angle + .pi / 2
+            flower.addChild(petal)
+        }
+        
+        // Center
+        let center = SKShapeNode(circleOfRadius: 6)
+        center.fillColor = SKColor(red: 1.0, green: 0.85, blue: 0.40, alpha: 1.0)
+        center.strokeColor = .clear
+        flower.addChild(center)
+        
+        return flower
+    }
+    
+    private func addPond(in size: CGSize) {
+        // Pond shape
+        let pond = SKShapeNode(ellipseOf: CGSize(width: 350, height: 200))
+        pond.fillColor = SKColor(red: 0.40, green: 0.70, blue: 0.85, alpha: 0.8)
+        pond.strokeColor = SKColor(red: 0.50, green: 0.75, blue: 0.88, alpha: 0.5)
+        pond.lineWidth = 8
+        pond.position = CGPoint(x: size.width * 0.65 - size.width / 2, y: size.height * 0.2 - size.height / 2)
+        pond.zPosition = -75
+        backgroundNode.addChild(pond)
+        
+        // Water shimmer effect
+        let shimmer = SKAction.sequence([
+            SKAction.fadeAlpha(to: 0.7, duration: 1.5),
+            SKAction.fadeAlpha(to: 0.9, duration: 1.5)
+        ])
+        pond.run(SKAction.repeatForever(shimmer))
+        
+        // Lily pads
+        let lilyPositions: [(x: CGFloat, y: CGFloat)] = [
+            (size.width * 0.60, size.height * 0.22),
+            (size.width * 0.70, size.height * 0.18),
+            (size.width * 0.68, size.height * 0.24)
+        ]
+        
+        for (x, y) in lilyPositions {
+            let lily = SKShapeNode(ellipseOf: CGSize(width: 30, height: 25))
+            lily.fillColor = SKColor(red: 0.30, green: 0.60, blue: 0.30, alpha: 0.9)
+            lily.strokeColor = .clear
+            lily.position = CGPoint(x: x - size.width / 2, y: y - size.height / 2)
+            lily.zPosition = -74
+            backgroundNode.addChild(lily)
+        }
     }
     
     private func calculateCameraBounds() {
@@ -134,13 +342,18 @@ class GameScene: SKScene {
     }
     
     private func setupSearchableItems() {
-        // Add placeholder searchable items
+        // Position ducks naturally around the scene
+        let bgSize = backgroundNode.size
+        
         let itemPositions: [CGPoint] = [
-            CGPoint(x: 400, y: 400),
-            CGPoint(x: 800, y: 600),
-            CGPoint(x: 1200, y: 300),
-            CGPoint(x: 1600, y: 800),
-            CGPoint(x: 500, y: 1000)
+            // Near the pond
+            CGPoint(x: bgSize.width * 0.55, y: bgSize.height * 0.22),
+            CGPoint(x: bgSize.width * 0.72, y: bgSize.height * 0.18),
+            // In the grass
+            CGPoint(x: bgSize.width * 0.15, y: bgSize.height * 0.12),
+            CGPoint(x: bgSize.width * 0.85, y: bgSize.height * 0.15),
+            // Near trees
+            CGPoint(x: bgSize.width * 0.35, y: bgSize.height * 0.28)
         ]
         
         totalCount = itemPositions.count
@@ -149,6 +362,7 @@ class GameScene: SKScene {
             let item = SearchableItemNode(type: "duck")
             item.position = position
             item.delegate = self
+            item.zPosition = 50
             addChild(item)
             searchableItems.append(item)
         }
