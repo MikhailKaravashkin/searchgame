@@ -68,7 +68,17 @@ SearchGame/
 
 ## Генерация артов
 
-Арты генерируются через ChatGPT DALL-E. Промпты в [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md).
+Арты генерируются через ChatGPT DALL-E.
+
+**Быстрый старт:**
+```bash
+echo "OPENAI_API_KEY=sk-..." > .env
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python scripts/generate_assets.py
+```
+
+Подробнее: [docs/GENERATE_ASSETS.md](docs/GENERATE_ASSETS.md), промпты: [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md).
 
 ## Разработка
 
