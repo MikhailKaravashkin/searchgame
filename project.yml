@@ -24,6 +24,8 @@ targets:
           - "**/*.xcassets"
       - path: SearchGame/Resources/Assets.xcassets
         type: folder
+      - path: SearchGame/Resources/Generated
+        type: folder
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.searchgame.app

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "searchgame-assets": {
+      "command": "bash",
+      "args": ["/Users/miguel/searchgame/scripts/run_asset_mcp.sh"],
+      "cwd": "/Users/miguel/searchgame"
+    }
+  }
+}
