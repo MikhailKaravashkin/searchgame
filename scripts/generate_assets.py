@@ -153,10 +153,11 @@ def main() -> None:
             size="1024x1024",
             transparent=True,
             prompt=(
-                "Single cute duck in simple schematic cartoon style, "
-                "thick black outline, flat pastel yellow color without gradients, "
-                "2D side view profile, minimal simple shapes, "
-                "kawaii children's book style, on white background"
+                "Single cute tiny duck in simple schematic cartoon style, "
+                "very soft pastel colors (pale yellow, soft peach), "
+                "delicate thin black outline, flat colors without gradients, "
+                "2D side view profile, minimal simple shapes, subtle and gentle, "
+                "blends with pastel background, children's book style, on white background"
             ),
         ),
     ]

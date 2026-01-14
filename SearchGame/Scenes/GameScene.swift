@@ -12,6 +12,7 @@ class GameScene: SKScene {
     private var searchableItems: [SearchableItemNode] = []
     private var foundCount: Int = 0
     private var totalCount: Int = 0
+    private var currentLevel: Int = 1
     
     // Camera bounds
     private var minCameraX: CGFloat = 0
@@ -356,25 +357,25 @@ class GameScene: SKScene {
     }
     
     private func setupSearchableItems() {
-        // Position ducks naturally around the scene
+        // Generate random positions across entire background
         let bgSize = backgroundNode.size
+        let itemCount = currentLevel == 1 ? 7 : 9 // More ducks on level 2
         
-        let itemPositions: [CGPoint] = [
-            // Near the pond
-            CGPoint(x: bgSize.width * 0.55, y: bgSize.height * 0.22),
-            CGPoint(x: bgSize.width * 0.72, y: bgSize.height * 0.18),
-            // In the grass
-            CGPoint(x: bgSize.width * 0.15, y: bgSize.height * 0.12),
-            CGPoint(x: bgSize.width * 0.85, y: bgSize.height * 0.15),
-            // Near trees
-            CGPoint(x: bgSize.width * 0.35, y: bgSize.height * 0.28)
-        ]
+        totalCount = itemCount
         
-        totalCount = itemPositions.count
+        // Define playable area (avoid edges)
+        let margin: CGFloat = 100
+        let minX = margin
+        let maxX = bgSize.width - margin
+        let minY = margin
+        let maxY = bgSize.height - margin
         
-        for position in itemPositions {
+        for _ in 0..<itemCount {
+            let randomX = CGFloat.random(in: minX...maxX)
+            let randomY = CGFloat.random(in: minY...maxY)
+            
             let item = SearchableItemNode(type: "duck")
-            item.position = position
+            item.position = CGPoint(x: randomX, y: randomY)
             item.delegate = self
             item.zPosition = 50
             addChild(item)
@@ -409,16 +410,46 @@ class GameScene: SKScene {
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else { return }
-        let location = touch.location(in: self)
+        let locationInCamera = touch.location(in: cameraNode)
+        let locationInScene = touch.location(in: self)
         
-        let touchedNodes = nodes(at: location)
+        let nodesInCamera = cameraNode.nodes(at: locationInCamera)
         
+        // Check for button tap
+        for node in nodesInCamera {
+            if node.name == "nextLevelButton" {
+                loadNextLevel()
+                return
+            }
+        }
+        
+        // Check for searchable items
+        let touchedNodes = nodes(at: locationInScene)
         for node in touchedNodes {
             if let searchable = node as? SearchableItemNode {
                 searchable.handleTap()
                 break
             }
         }
+    }
+    
+    private func loadNextLevel() {
+        currentLevel += 1
+        
+        // Clear current level
+        searchableItems.removeAll()
+        foundCount = 0
+        
+        // Remove all children except camera
+        removeAllChildren()
+        addChild(cameraNode)
+        
+        // Reload scene
+        setupBackground()
+        setupHUD()
+        setupSearchableItems()
+        
+        SoundManager.shared.playItemFound()
     }
     
     // MARK: - Game Logic
@@ -437,18 +468,88 @@ class GameScene: SKScene {
         // Play victory sound
         SoundManager.shared.playVictory()
         
+        // Dark overlay for contrast
+        let overlay = SKShapeNode(rectOf: CGSize(width: 2000, height: 2000))
+        overlay.fillColor = SKColor(white: 0, alpha: 0)
+        overlay.strokeColor = .clear
+        overlay.position = .zero
+        overlay.zPosition = 1990
+        cameraNode.addChild(overlay)
+        
+        let fadeIn = SKAction.fadeAlpha(to: 0.7, duration: 0.3)
+        overlay.run(fadeIn)
+        
+        // Contrasting victory label with background
+        let victoryBg = SKShapeNode(rectOf: CGSize(width: 500, height: 120), cornerRadius: 20)
+        victoryBg.fillColor = SKColor(red: 1.0, green: 0.85, blue: 0.0, alpha: 1.0)
+        victoryBg.strokeColor = SKColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
+        victoryBg.lineWidth = 8
+        victoryBg.position = .zero
+        victoryBg.zPosition = 2000
+        victoryBg.setScale(0)
+        cameraNode.addChild(victoryBg)
+        
         let victoryLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
-        victoryLabel.text = "🎉 All Found! 🎉"
+        victoryLabel.text = "🎉 ALL FOUND! 🎉"
         victoryLabel.fontSize = 48
-        victoryLabel.fontColor = .white
+        victoryLabel.fontColor = SKColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
         victoryLabel.position = .zero
-        victoryLabel.zPosition = 2000
+        victoryLabel.verticalAlignmentMode = .center
+        victoryLabel.zPosition = 2010
         victoryLabel.setScale(0)
         cameraNode.addChild(victoryLabel)
         
-        let scaleUp = SKAction.scale(to: 1.0, duration: 0.5)
+        // Animated entrance with bounce
+        let scaleUp = SKAction.scale(to: 1.2, duration: 0.3)
         scaleUp.timingMode = .easeOut
-        victoryLabel.run(scaleUp)
+        let scaleDown = SKAction.scale(to: 1.0, duration: 0.2)
+        scaleDown.timingMode = .easeInEaseOut
+        let bounce = SKAction.sequence([scaleUp, scaleDown])
+        
+        victoryBg.run(bounce)
+        victoryLabel.run(bounce)
+        
+        // Pulse animation
+        let pulseUp = SKAction.scale(to: 1.05, duration: 0.8)
+        let pulseDown = SKAction.scale(to: 1.0, duration: 0.8)
+        let pulse = SKAction.sequence([pulseUp, pulseDown])
+        let repeatPulse = SKAction.repeatForever(pulse)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            victoryBg.run(repeatPulse)
+            victoryLabel.run(repeatPulse)
+        }
+        
+        // Show next level button after 2 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            self?.showNextLevelButton()
+        }
+    }
+    
+    private func showNextLevelButton() {
+        let button = SKShapeNode(rectOf: CGSize(width: 250, height: 60), cornerRadius: 12)
+        button.fillColor = SKColor(red: 0.4, green: 0.8, blue: 0.4, alpha: 1.0)
+        button.strokeColor = SKColor(red: 0.2, green: 0.6, blue: 0.2, alpha: 1.0)
+        button.lineWidth = 4
+        button.position = CGPoint(x: 0, y: -100)
+        button.zPosition = 2020
+        button.name = "nextLevelButton"
+        button.alpha = 0
+        cameraNode.addChild(button)
+        
+        let buttonLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
+        buttonLabel.text = "Next Level ▶"
+        buttonLabel.fontSize = 28
+        buttonLabel.fontColor = .white
+        buttonLabel.verticalAlignmentMode = .center
+        buttonLabel.position = button.position
+        buttonLabel.zPosition = 2030
+        buttonLabel.alpha = 0
+        cameraNode.addChild(buttonLabel)
+        
+        let fadeIn = SKAction.fadeIn(withDuration: 0.3)
+        button.run(fadeIn)
+        buttonLabel.run(fadeIn)
     }
 }
 

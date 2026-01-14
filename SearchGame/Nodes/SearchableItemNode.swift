@@ -29,8 +29,7 @@ class SearchableItemNode: SKSpriteNode {
         self.name = "searchable_\(type)"
         self.zPosition = 10
         
-        // Add subtle idle animation
-        addIdleAnimation()
+        // No idle animation - items should be static
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -111,23 +110,12 @@ class SearchableItemNode: SKSpriteNode {
         return SKTexture(image: image ?? UIImage())
     }
     
-    // MARK: - Animations
-    
-    private func addIdleAnimation() {
-        let scaleUp = SKAction.scale(to: 1.05, duration: 1.0)
-        let scaleDown = SKAction.scale(to: 0.95, duration: 1.0)
-        let sequence = SKAction.sequence([scaleUp, scaleDown])
-        let forever = SKAction.repeatForever(sequence)
-        run(forever, withKey: "idle")
-    }
-    
     // MARK: - Interaction
     
     func handleTap() {
         guard !isFound else { return }
         
         isFound = true
-        removeAction(forKey: "idle")
         
         // Play sound
         SoundManager.shared.playItemFound()

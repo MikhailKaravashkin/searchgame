@@ -1,0 +1,12 @@
+{
+  "id": "level2",
+  "name": "Village Evening",
+  "background": "bg_farm_evening",
+  "itemCount": 9,
+  "searchItems": [
+    {
+      "type": "duck",
+      "count": 9
+    }
+  ]
+}

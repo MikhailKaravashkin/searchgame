@@ -3,12 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		00BC002EA8C3629586182B5F /* SearchableItemNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EDDADCF0804DEDD54267D28 /* SearchableItemNode.swift */; };
 		018A390EDB6F36E40BCE3FD7 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADB99C8F53405B0071CD8E88 /* GameViewController.swift */; };
+		0CFFFEA38F34F242ABA0BF14 /* level2.json in Resources */ = {isa = PBXBuildFile; fileRef = C68AC08515536855675DF319 /* level2.json */; };
 		1271B2E7345C2F888D8102B0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3C94473CCA804FFCAC7BFB03 /* Assets.xcassets */; };
 		2DEBB09CE5BDA713C25332CB /* SearchGameUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B901139ADAD394A63CE95FF4 /* SearchGameUITests.swift */; };
 		38CC4D18114C11118A60B9C0 /* Generated in Resources */ = {isa = PBXBuildFile; fileRef = C2CD9CACA7EF1A2FCE63970C /* Generated */; };
@@ -16,8 +17,8 @@
 		7C4855EC65D629A1FF24CA05 /* bg_farm_day.png in Resources */ = {isa = PBXBuildFile; fileRef = 05C8AD29F2804F9D4A9349BF /* bg_farm_day.png */; };
 		960974546C482187E14C383E /* LevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A920825DE71C0AECCCE9E8CE /* LevelTests.swift */; };
 		9BB02C78C5BFFD79F6130B03 /* Level.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF1D412C8E3CC80AB42EF0B /* Level.swift */; };
-		BC3352D7D1C50F1E86736987 /* duck.png in Resources */ = {isa = PBXBuildFile; fileRef = 9617968DD50D7EA61F03783E /* duck.png */; };
 		D95738873B6EBDC03BE16A1E /* AssetLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80566315B65DC7DA6DB95497 /* AssetLoader.swift */; };
+		EC462C26F201DECFCD27AC80 /* level1.json in Resources */ = {isa = PBXBuildFile; fileRef = 29D451A48B3338064E059EBD /* level1.json */; };
 		F23FA52C2A2785CC7E37C2D5 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFC30B862505190388CD7289 /* SoundManager.swift */; };
 		F57E69E0A180095CAAF6B2A6 /* SearchGameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A895C8F7E61B99EA70698214 /* SearchGameApp.swift */; };
 /* End PBXBuildFile section */
@@ -42,21 +43,22 @@
 /* Begin PBXFileReference section */
 		05C8AD29F2804F9D4A9349BF /* bg_farm_day.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bg_farm_day.png; sourceTree = "<group>"; };
 		0D54DA925C8E1E3BAD7192CF /* SearchGameUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SearchGameUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		29D451A48B3338064E059EBD /* level1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = level1.json; sourceTree = "<group>"; };
 		3C94473CCA804FFCAC7BFB03 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets.xcassets; path = SearchGame/Resources/Assets.xcassets; sourceTree = SOURCE_ROOT; };
-		4FA0F5253F0366AE61BBB24B /* .gitkeep */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitkeep; sourceTree = "<group>"; };
+		4FA0F5253F0366AE61BBB24B /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		6384C22B3CECF7991CF54727 /* SearchGameTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SearchGameTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FF1D412C8E3CC80AB42EF0B /* Level.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level.swift; sourceTree = "<group>"; };
 		80566315B65DC7DA6DB95497 /* AssetLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLoader.swift; sourceTree = "<group>"; };
-		9617968DD50D7EA61F03783E /* duck.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = duck.png; sourceTree = "<group>"; };
 		9EDDADCF0804DEDD54267D28 /* SearchableItemNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchableItemNode.swift; sourceTree = "<group>"; };
 		A895C8F7E61B99EA70698214 /* SearchGameApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchGameApp.swift; sourceTree = "<group>"; };
 		A920825DE71C0AECCCE9E8CE /* LevelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelTests.swift; sourceTree = "<group>"; };
 		ADB99C8F53405B0071CD8E88 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
-		AF89DB305137626A5E1EDCD7 /* .gitkeep */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitkeep; sourceTree = "<group>"; };
+		AF89DB305137626A5E1EDCD7 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		B901139ADAD394A63CE95FF4 /* SearchGameUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchGameUITests.swift; sourceTree = "<group>"; };
 		C2CD9CACA7EF1A2FCE63970C /* Generated */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Generated; path = SearchGame/Resources/Generated; sourceTree = SOURCE_ROOT; };
+		C68AC08515536855675DF319 /* level2.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = level2.json; sourceTree = "<group>"; };
 		CFC30B862505190388CD7289 /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
-		D8C6DFCE49A4350518879C58 /* SearchGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SearchGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D8C6DFCE49A4350518879C58 /* SearchGame.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SearchGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FC2902A8C4A6E4F432B99E87 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -175,6 +177,8 @@
 			isa = PBXGroup;
 			children = (
 				AF89DB305137626A5E1EDCD7 /* .gitkeep */,
+				29D451A48B3338064E059EBD /* level1.json */,
+				C68AC08515536855675DF319 /* level2.json */,
 			);
 			path = Levels;
 			sourceTree = "<group>";
@@ -192,7 +196,6 @@
 			children = (
 				4FA0F5253F0366AE61BBB24B /* .gitkeep */,
 				05C8AD29F2804F9D4A9349BF /* bg_farm_day.png */,
-				9617968DD50D7EA61F03783E /* duck.png */,
 			);
 			path = Generated;
 			sourceTree = "<group>";
@@ -264,6 +267,7 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					42DDE70EA7B5B288B86626C6 = {
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 					A70306439C142B563E990F26 = {
@@ -285,6 +289,7 @@
 			);
 			mainGroup = 318C941EC05406C7D1400B66;
 			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -303,7 +308,8 @@
 				1271B2E7345C2F888D8102B0 /* Assets.xcassets in Resources */,
 				38CC4D18114C11118A60B9C0 /* Generated in Resources */,
 				7C4855EC65D629A1FF24CA05 /* bg_farm_day.png in Resources */,
-				BC3352D7D1C50F1E86736987 /* duck.png in Resources */,
+				EC462C26F201DECFCD27AC80 /* level1.json in Resources */,
+				0CFFFEA38F34F242ABA0BF14 /* level2.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -404,21 +410,18 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2BW7N5NS2K;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Search Game";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiresFullScreen = NO;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.searchgameduck.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.searchgame.app;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -599,21 +602,18 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2BW7N5NS2K;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Search Game";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiresFullScreen = NO;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.searchgameduck.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.searchgame.app;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
