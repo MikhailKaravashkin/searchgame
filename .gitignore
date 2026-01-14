@@ -61,3 +61,7 @@ playground.xcworkspace
 
 # local env
 .env
+
+# Python
+__pycache__/
+*.pyc
