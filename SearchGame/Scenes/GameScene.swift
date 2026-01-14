@@ -620,7 +620,7 @@ class GameScene: SKScene {
     }
     
     private func clearLevel() {
-        // Remove all victory UI (explicit names so Restart always disappears)
+        // Remove all victory UI and buttons (explicit names so everything disappears)
         let namesToRemove: Set<String> = [
             "victoryOverlay",
             "victoryPanel",
@@ -632,11 +632,20 @@ class GameScene: SKScene {
             "restartButtonLabel",
         ]
 
+        // Remove from cameraNode (where buttons live)
         cameraNode.children.forEach { node in
             if let name = node.name, namesToRemove.contains(name) {
                 node.removeFromParent()
             }
         }
+        
+        // Also brute-force remove any orphan button nodes (safety net)
+        cameraNode.children.filter { node in
+            if let name = node.name {
+                return name.contains("Button") || name.contains("victory") || name.contains("timeLabel")
+            }
+            return false
+        }.forEach { $0.removeFromParent() }
         
         // Clear items
         searchableItems.forEach { $0.removeFromParent() }
