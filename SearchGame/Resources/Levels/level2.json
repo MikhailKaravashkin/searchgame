@@ -2,11 +2,11 @@
   "id": "level2",
   "name": "Village Evening",
   "background": "bg_farm_evening",
-  "itemCount": 9,
+  "itemCount": 20,
   "searchItems": [
     {
       "type": "duck",
-      "count": 9
+      "count": 20
     }
   ]
 }

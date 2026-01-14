@@ -2,11 +2,11 @@
   "id": "level1",
   "name": "Village Day",
   "background": "bg_farm_day",
-  "itemCount": 7,
+  "itemCount": 20,
   "searchItems": [
     {
       "type": "duck",
-      "count": 7
+      "count": 20
     }
   ]
 }

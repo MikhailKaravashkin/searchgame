@@ -335,31 +335,66 @@ class GameScene: SKScene {
         hudLayer.zPosition = 1000
         cameraNode.addChild(hudLayer)
         
+        guard let view = view else { return }
+        
+        // Position counter below safe area (Dynamic Island / notch)
+        let safeAreaTop: CGFloat = 60 // Safe margin from top
+        let counterYPosition = view.bounds.height / 2 - safeAreaTop - 40
+        
         // Counter background
         let counterBg = SKShapeNode(rectOf: CGSize(width: 150, height: 50), cornerRadius: 12)
         counterBg.fillColor = SKColor(white: 0, alpha: 0.6)
         counterBg.strokeColor = SKColor(white: 1, alpha: 0.3)
         counterBg.lineWidth = 2
-        
-        guard let view = view else { return }
-        counterBg.position = CGPoint(x: 0, y: view.bounds.height / 2 - 60)
+        counterBg.position = CGPoint(x: 0, y: counterYPosition)
         hudLayer.addChild(counterBg)
         
-        // Counter label
+        // Duck icon
+        let duckIcon: SKNode
+        if let duckTexture = AssetLoader.texture(named: "duck") {
+            let sprite = SKSpriteNode(texture: duckTexture)
+            sprite.size = CGSize(width: 32, height: 32)
+            duckIcon = sprite
+        } else {
+            // Fallback: create simple duck icon programmatically
+            duckIcon = createDuckIcon()
+        }
+        duckIcon.position = CGPoint(x: -50, y: counterYPosition)
+        hudLayer.addChild(duckIcon)
+        
+        // Counter label (just numbers now)
         counterLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
         counterLabel.fontSize = 24
         counterLabel.fontColor = .white
         counterLabel.verticalAlignmentMode = .center
-        counterLabel.position = counterBg.position
+        counterLabel.horizontalAlignmentMode = .left
+        counterLabel.position = CGPoint(x: -25, y: counterYPosition)
         hudLayer.addChild(counterLabel)
         
         updateCounter()
     }
     
+    private func createDuckIcon() -> SKNode {
+        // Simple programmatic duck icon
+        let icon = SKShapeNode(ellipseOf: CGSize(width: 28, height: 22))
+        icon.fillColor = SKColor(red: 1.0, green: 0.9, blue: 0.6, alpha: 1.0)
+        icon.strokeColor = SKColor(red: 0.9, green: 0.8, blue: 0.5, alpha: 1.0)
+        icon.lineWidth = 2
+        
+        // Simple beak
+        let beak = SKShapeNode(circleOfRadius: 4)
+        beak.fillColor = SKColor(red: 1.0, green: 0.6, blue: 0.2, alpha: 1.0)
+        beak.strokeColor = .clear
+        beak.position = CGPoint(x: 14, y: 0)
+        icon.addChild(beak)
+        
+        return icon
+    }
+    
     private func setupSearchableItems() {
         // Generate random positions across entire background
         let bgSize = backgroundNode.size
-        let itemCount = currentLevel == 1 ? 7 : 9 // More ducks on level 2
+        let itemCount = 20 // 20 ducks to find
         
         totalCount = itemCount
         
@@ -455,7 +490,7 @@ class GameScene: SKScene {
     // MARK: - Game Logic
     
     private func updateCounter() {
-        counterLabel.text = "🦆 \(foundCount)/\(totalCount)"
+        counterLabel.text = "\(foundCount)/\(totalCount)"
     }
     
     private func checkVictory() {
