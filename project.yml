@@ -1,6 +1,6 @@
 name: SearchGame
 options:
-  bundleIdPrefix: com.searchgame
+  bundleIdPrefix: com.searchgameduck
   deploymentTarget:
     iOS: "15.0"
   xcodeVersion: "15.0"
@@ -28,7 +28,7 @@ targets:
         type: folder
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.searchgame.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.searchgameduck.app
         GENERATE_INFOPLIST_FILE: YES
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
@@ -49,7 +49,7 @@ targets:
       - path: SearchGameTests
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.searchgame.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.searchgameduck.tests
         GENERATE_INFOPLIST_FILE: YES
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
@@ -64,7 +64,7 @@ targets:
       - path: SearchGameUITests
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.searchgame.uitests
+        PRODUCT_BUNDLE_IDENTIFIER: com.searchgameduck.uitests
         GENERATE_INFOPLIST_FILE: YES
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
