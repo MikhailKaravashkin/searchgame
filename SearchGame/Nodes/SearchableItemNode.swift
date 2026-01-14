@@ -129,6 +129,9 @@ class SearchableItemNode: SKSpriteNode {
         isFound = true
         removeAction(forKey: "idle")
         
+        // Play sound
+        SoundManager.shared.playItemFound()
+        
         // Found animation sequence
         let scaleUp = SKAction.scale(to: 1.3, duration: 0.1)
         let fadeOut = SKAction.fadeOut(withDuration: 0.3)

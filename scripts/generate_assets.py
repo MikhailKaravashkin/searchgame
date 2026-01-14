@@ -137,10 +137,13 @@ def main() -> None:
             size=default_bg_size,
             transparent=False,
             prompt=(
-                "Cute kawaii farm scene, panoramic wide illustration, pastel colors, "
-                "cats and pandas playing together, windmill in background, red barn, "
-                "pond with lily pads, flower gardens, detailed but not cluttered, "
-                "game background art style, soft warm lighting, "
+                "Cute kawaii village scene panoramic illustration in simple cartoon style, "
+                "pastel colors (soft pink, mint green, baby blue, pale yellow), "
+                "many small details filling entire frame: tiny houses, cats in profile, "
+                "pandas, puppies, flowers, trees, all drawn with thick black outlines, "
+                "flat colors without gradients or shading, 2D schematic style, "
+                "densely packed with cute characters and tiny scenes everywhere, "
+                "simple shapes, children's book illustration style, "
                 "no text, no watermark"
             ),
         ),
@@ -150,8 +153,10 @@ def main() -> None:
             size="1024x1024",
             transparent=True,
             prompt=(
-                "A single yellow rubber duck toy on white background, "
-                "side view, simple cute design, game sprite"
+                "Single cute duck in simple schematic cartoon style, "
+                "thick black outline, flat pastel yellow color without gradients, "
+                "2D side view profile, minimal simple shapes, "
+                "kawaii children's book style, on white background"
             ),
         ),
     ]

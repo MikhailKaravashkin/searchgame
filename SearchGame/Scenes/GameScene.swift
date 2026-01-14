@@ -31,6 +31,9 @@ class GameScene: SKScene {
         setupHUD()
         setupSearchableItems()
         setupGestures()
+        
+        // Start background music
+        SoundManager.shared.playBackgroundMusic()
     }
     
     // MARK: - Setup
@@ -431,6 +434,9 @@ class GameScene: SKScene {
     }
     
     private func showVictory() {
+        // Play victory sound
+        SoundManager.shared.playVictory()
+        
         let victoryLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
         victoryLabel.text = "🎉 All Found! 🎉"
         victoryLabel.fontSize = 48
