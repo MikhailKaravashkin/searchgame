@@ -1,12 +1,3 @@
-// swiftlint:disable blanket_disable_command
-// swiftlint:disable file_length
-// swiftlint:disable type_body_length
-// swiftlint:disable identifier_name
-// swiftlint:disable large_tuple
-// swiftlint:disable line_length
-// swiftlint:disable trailing_whitespace
-// swiftlint:disable function_body_length
-// swiftlint:disable trailing_comma
 import SpriteKit
 
 class GameScene: SKScene {
@@ -16,12 +7,16 @@ class GameScene: SKScene {
     private var cameraNode: SKCameraNode!
     private var backgroundNode: SKSpriteNode!
     private var hudLayer: SKNode!
-    private var counterLabel: SKLabelNode!
+    private var itemCounters: [String: (icon: SKNode, label: SKLabelNode, found: Int, total: Int)] = [:]
+    
+    private var currentLevel: Level?
+    private var currentLevelIndex: Int = 0
+    private var levelIds: [String] = ["level1"]  // Add more levels here
     
     private var searchableItems: [SearchableItemNode] = []
-    private var foundCount: Int = 0
-    private var totalCount: Int = 0
-    private var currentLevel: Int = 1
+    private var decorations: [DecorationNode] = []
+    private var foundCounts: [String: Int] = [:]
+    
     private var levelStartTime: Date?
     private var timerLabel: SKLabelNode!
     
@@ -39,16 +34,63 @@ class GameScene: SKScene {
         backgroundColor = SKColor(red: 0.15, green: 0.15, blue: 0.2, alpha: 1.0)
         
         setupCamera()
-        setupBackground()
-        setupHUD()
-        setupSearchableItems()
+        loadCurrentLevel()
         setupGestures()
         
-        // Start level timer
-        levelStartTime = Date()
-        
-        // Start background music
         SoundManager.shared.playBackgroundMusic()
+    }
+    
+    // MARK: - Level Loading
+    
+    private func loadCurrentLevel() {
+        let levelId = levelIds[currentLevelIndex]
+        
+        do {
+            currentLevel = try LevelLoader.load(levelId: levelId)
+            setupLevel()
+        } catch {
+            print("Failed to load level \(levelId): \(error)")
+            // Fallback to procedural level
+            setupFallbackLevel()
+        }
+    }
+    
+    private func setupLevel() {
+        guard let level = currentLevel else { return }
+        
+        // Reset state
+        foundCounts = [:]
+        for item in level.searchItems {
+            foundCounts[item.type] = 0
+        }
+        
+        setupBackground()
+        setupDecorations()
+        setupSearchableItems()
+        setupHUD()
+        
+        levelStartTime = Date()
+    }
+    
+    private func setupFallbackLevel() {
+        // Create a simple fallback level if JSON loading fails
+        let fallbackLevel = """
+        {
+            "id": "fallback",
+            "name": "Fallback Level",
+            "background": "bg_farm_day",
+            "searchItems": [
+                {"type": "rock", "count": 4, "animation": "bobbing"},
+                {"type": "flower", "count": 4, "animation": "swaying"}
+            ]
+        }
+        """
+        
+        if let data = fallbackLevel.data(using: .utf8),
+           let level = try? LevelLoader.loadFromData(data) {
+            currentLevel = level
+            setupLevel()
+        }
     }
     
     // MARK: - Setup
@@ -60,11 +102,10 @@ class GameScene: SKScene {
     }
     
     private func setupBackground() {
-        // Load background based on current level
-        let bgName = currentLevel == 1 ? "bg_farm_day" : "bg_forest_evening"
+        guard let level = currentLevel else { return }
         
-        // Prefer generated/real art if present in bundle, fallback to procedural scene.
-        if let tex = AssetLoader.texture(named: bgName) {
+        // Try to load generated background
+        if let tex = AssetLoader.texture(named: level.background) {
             let backgroundSize = tex.size()
             backgroundNode = SKSpriteNode(texture: tex, size: backgroundSize)
             backgroundNode.position = CGPoint(x: backgroundSize.width / 2, y: backgroundSize.height / 2)
@@ -73,261 +114,221 @@ class GameScene: SKScene {
             calculateCameraBounds()
             return
         }
-
+        
+        // Fallback to procedural background
         let backgroundSize = CGSize(width: 2048, height: 1536)
-
-        // Create beautiful gradient background
         backgroundNode = SKSpriteNode(texture: createGradientTexture(size: backgroundSize), size: backgroundSize)
         backgroundNode.position = CGPoint(x: backgroundSize.width / 2, y: backgroundSize.height / 2)
         backgroundNode.zPosition = -100
         addChild(backgroundNode)
         
-        // Add scenic elements
-        addScenicElements()
-        
-        // Calculate camera bounds
+        addProceduralScenery()
         calculateCameraBounds()
     }
     
-    private func createGradientTexture(size: CGSize) -> SKTexture {
-        UIGraphicsBeginImageContextWithOptions(size, true, 1.0)
-        guard let context = UIGraphicsGetCurrentContext() else {
-            UIGraphicsEndImageContext()
-            return SKTexture()
-        }
+    private func setupDecorations() {
+        guard let level = currentLevel, let decorationConfigs = level.decorations else { return }
         
-        // Sky gradient (top to middle)
-        let skyColors = [
-            UIColor(red: 0.53, green: 0.81, blue: 0.92, alpha: 1.0).cgColor,  // Light sky blue
-            UIColor(red: 0.69, green: 0.88, blue: 0.90, alpha: 1.0).cgColor,  // Pale turquoise
-            UIColor(red: 0.98, green: 0.91, blue: 0.71, alpha: 1.0).cgColor   // Warm horizon
-        ]
-        let skyGradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: skyColors as CFArray, locations: [0.0, 0.5, 1.0])!
-        context.drawLinearGradient(skyGradient, start: CGPoint(x: 0, y: size.height), end: CGPoint(x: 0, y: size.height * 0.35), options: [])
-        
-        // Ground gradient (middle to bottom)
-        let groundColors = [
-            UIColor(red: 0.56, green: 0.74, blue: 0.56, alpha: 1.0).cgColor,  // Soft green
-            UIColor(red: 0.42, green: 0.63, blue: 0.42, alpha: 1.0).cgColor,  // Medium green
-            UIColor(red: 0.33, green: 0.52, blue: 0.33, alpha: 1.0).cgColor   // Darker green
-        ]
-        let groundGradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: groundColors as CFArray, locations: [0.0, 0.5, 1.0])!
-        context.drawLinearGradient(groundGradient, start: CGPoint(x: 0, y: size.height * 0.4), end: CGPoint(x: 0, y: 0), options: [])
-        
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        return SKTexture(image: image ?? UIImage())
-    }
-    
-    private func addScenicElements() {
-        let bgSize = backgroundNode.size
-        
-        // Add clouds
-        addClouds(in: bgSize)
-        
-        // Add hills in background
-        addHills(in: bgSize)
-        
-        // Add trees
-        addTrees(in: bgSize)
-        
-        // Add flowers
-        addFlowers(in: bgSize)
-        
-        // Add pond
-        addPond(in: bgSize)
-    }
-    
-    private func addClouds(in size: CGSize) {
-        let cloudPositions: [(x: CGFloat, y: CGFloat, scale: CGFloat)] = [
-            (200, size.height - 150, 1.0),
-            (600, size.height - 200, 0.7),
-            (1000, size.height - 120, 1.2),
-            (1400, size.height - 180, 0.8),
-            (1800, size.height - 140, 1.1)
-        ]
-        
-        for (x, y, scale) in cloudPositions {
-            let cloud = createCloud()
-            cloud.position = CGPoint(x: x - size.width / 2, y: y - size.height / 2)
-            cloud.setScale(scale)
-            cloud.zPosition = -95
-            backgroundNode.addChild(cloud)
+        for config in decorationConfigs {
+            let positions = config.positions ?? [DecorationConfig.Position(x: 500, y: 500)]
+            let path = config.path?.map { $0.cgPoint }
+            let speed = config.speed ?? 1.0
+            let zPos = config.zPosition ?? -50
             
-            // Gentle floating animation
-            let moveUp = SKAction.moveBy(x: 0, y: 10, duration: Double.random(in: 3...5))
-            let moveDown = SKAction.moveBy(x: 0, y: -10, duration: Double.random(in: 3...5))
-            cloud.run(SKAction.repeatForever(SKAction.sequence([moveUp, moveDown])))
+            for pos in positions {
+                let decoration = DecorationNode(
+                    type: config.type,
+                    animation: config.animation,
+                    path: path,
+                    animSpeed: speed
+                )
+                decoration.position = pos.cgPoint
+                decoration.zPosition = zPos
+                addChild(decoration)
+                decorations.append(decoration)
+            }
         }
     }
     
-    private func createCloud() -> SKNode {
-        let cloud = SKNode()
-        let circleRadii: [(x: CGFloat, y: CGFloat, r: CGFloat)] = [
-            (0, 0, 40), (-35, -5, 30), (35, -5, 30), (-20, 15, 25), (20, 15, 25)
-        ]
+    private func setupSearchableItems() {
+        guard let level = currentLevel else { return }
         
-        for (x, y, r) in circleRadii {
-            let circle = SKShapeNode(circleOfRadius: r)
-            circle.fillColor = SKColor(white: 1.0, alpha: 0.9)
-            circle.strokeColor = .clear
-            circle.position = CGPoint(x: x, y: y)
-            cloud.addChild(circle)
-        }
-        return cloud
-    }
-    
-    private func addHills(in size: CGSize) {
-        // Background hills
-        let hillColors: [SKColor] = [
-            SKColor(red: 0.45, green: 0.65, blue: 0.45, alpha: 0.6),
-            SKColor(red: 0.50, green: 0.70, blue: 0.50, alpha: 0.7),
-            SKColor(red: 0.55, green: 0.72, blue: 0.55, alpha: 0.8)
-        ]
+        let bgSize = backgroundNode.size
+        let margin: CGFloat = 80
         
-        let hillData: [(xOffset: CGFloat, width: CGFloat, height: CGFloat, colorIndex: Int)] = [
-            (300, 600, 200, 0),
-            (800, 500, 180, 1),
-            (1400, 700, 220, 0),
-            (1900, 550, 190, 2)
-        ]
-        
-        for (xOffset, width, height, colorIndex) in hillData {
-            let hill = SKShapeNode(ellipseOf: CGSize(width: width, height: height))
-            hill.fillColor = hillColors[colorIndex]
-            hill.strokeColor = .clear
-            hill.position = CGPoint(x: xOffset - size.width / 2, y: size.height * 0.35 - size.height / 2)
-            hill.zPosition = -90
-            backgroundNode.addChild(hill)
+        for itemConfig in level.searchItems {
+            let animation = itemConfig.animation ?? .bobbing
+            let zPos = itemConfig.zPosition ?? 50
+            
+            // Use predefined positions or generate random ones
+            let positions: [CGPoint]
+            if let predefinedPositions = itemConfig.positions {
+                positions = predefinedPositions.map { $0.cgPoint }
+            } else {
+                // Generate random positions within spawn zones or background bounds
+                positions = generateRandomPositions(
+                    count: itemConfig.count,
+                    zones: level.spawnZones,
+                    bounds: CGRect(x: margin, y: margin, width: bgSize.width - margin * 2, height: bgSize.height - margin * 2)
+                )
+            }
+            
+            for (index, pos) in positions.prefix(itemConfig.count).enumerated() {
+                let item = SearchableItemNode(type: itemConfig.type, animation: animation)
+                item.position = pos
+                item.zPosition = zPos + CGFloat(index) * 0.1  // Slight z variation
+                item.delegate = self
+                addChild(item)
+                searchableItems.append(item)
+            }
         }
     }
     
-    private func addTrees(in size: CGSize) {
-        let treePositions: [CGFloat] = [150, 450, 750, 1100, 1500, 1850]
+    private func generateRandomPositions(count: Int, zones: [SpawnZone]?, bounds: CGRect) -> [CGPoint] {
+        var positions: [CGPoint] = []
         
-        for x in treePositions {
-            let tree = createTree()
-            let y = CGFloat.random(in: (size.height * 0.15)...(size.height * 0.35))
-            tree.position = CGPoint(x: x - size.width / 2, y: y - size.height / 2)
-            tree.zPosition = -80 + CGFloat.random(in: 0...5)
-            tree.setScale(CGFloat.random(in: 0.8...1.2))
-            backgroundNode.addChild(tree)
+        for _ in 0..<count {
+            let point: CGPoint
+            if let zones = zones, !zones.isEmpty {
+                let zone = zones.randomElement()!
+                point = zone.randomPoint()
+            } else {
+                point = CGPoint(
+                    x: CGFloat.random(in: bounds.minX...bounds.maxX),
+                    y: CGFloat.random(in: bounds.minY...bounds.maxY)
+                )
+            }
+            positions.append(point)
+        }
+        
+        return positions
+    }
+    
+    private func setupHUD() {
+        hudLayer?.removeFromParent()
+        hudLayer = SKNode()
+        hudLayer.zPosition = 1000
+        cameraNode.addChild(hudLayer)
+        
+        guard let view = view, let level = currentLevel else { return }
+        
+        let safeAreaTop: CGFloat = 60
+        let topY = view.bounds.height / 2 - safeAreaTop
+        
+        // Timer label (top left)
+        timerLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
+        timerLabel.fontSize = 18
+        timerLabel.fontColor = .white
+        timerLabel.horizontalAlignmentMode = .left
+        timerLabel.verticalAlignmentMode = .top
+        timerLabel.position = CGPoint(x: -view.bounds.width / 2 + 16, y: topY)
+        timerLabel.text = "⏱ 0:00"
+        hudLayer.addChild(timerLabel)
+        
+        // Bottom panel for item counters
+        let bottomY = -view.bounds.height / 2 + 80
+        let panelWidth = view.bounds.width - 32
+        let panelHeight: CGFloat = 90
+        
+        let panel = SKShapeNode(rectOf: CGSize(width: panelWidth, height: panelHeight), cornerRadius: 16)
+        panel.fillColor = SKColor(white: 0.1, alpha: 0.85)
+        panel.strokeColor = SKColor(white: 0.3, alpha: 0.5)
+        panel.lineWidth = 2
+        panel.position = CGPoint(x: 0, y: bottomY)
+        hudLayer.addChild(panel)
+        
+        // Level name
+        let levelLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
+        levelLabel.text = level.name
+        levelLabel.fontSize = 14
+        levelLabel.fontColor = SKColor(white: 0.7, alpha: 1.0)
+        levelLabel.position = CGPoint(x: 0, y: bottomY + panelHeight / 2 - 18)
+        hudLayer.addChild(levelLabel)
+        
+        // Progress bar
+        let progressBgWidth = panelWidth - 40
+        let progressBg = SKShapeNode(rectOf: CGSize(width: progressBgWidth, height: 8), cornerRadius: 4)
+        progressBg.fillColor = SKColor(white: 0.2, alpha: 1.0)
+        progressBg.strokeColor = .clear
+        progressBg.position = CGPoint(x: 0, y: bottomY + panelHeight / 2 - 35)
+        progressBg.name = "progressBg"
+        hudLayer.addChild(progressBg)
+        
+        let progressFill = SKShapeNode(rectOf: CGSize(width: 0, height: 8), cornerRadius: 4)
+        progressFill.fillColor = SKColor(red: 0.4, green: 0.8, blue: 0.4, alpha: 1.0)
+        progressFill.strokeColor = .clear
+        progressFill.position = CGPoint(x: -progressBgWidth / 2, y: bottomY + panelHeight / 2 - 35)
+        progressFill.name = "progressFill"
+        hudLayer.addChild(progressFill)
+        
+        // Item counters
+        let itemCount = level.searchItems.count
+        let spacing = panelWidth / CGFloat(itemCount + 1)
+        let startX = -panelWidth / 2 + spacing
+        
+        itemCounters.removeAll()
+        
+        for (index, itemConfig) in level.searchItems.enumerated() {
+            let x = startX + spacing * CGFloat(index)
+            let y = bottomY - 10
+            
+            // Item icon container
+            let iconBg = SKShapeNode(rectOf: CGSize(width: 50, height: 50), cornerRadius: 10)
+            iconBg.fillColor = SKColor(white: 0.15, alpha: 1.0)
+            iconBg.strokeColor = SKColor(white: 0.4, alpha: 0.5)
+            iconBg.lineWidth = 2
+            iconBg.position = CGPoint(x: x, y: y)
+            hudLayer.addChild(iconBg)
+            
+            // Item icon
+            let icon: SKNode
+            if let texture = AssetLoader.texture(named: itemConfig.type) {
+                let sprite = SKSpriteNode(texture: texture)
+                sprite.size = CGSize(width: 36, height: 36)
+                icon = sprite
+            } else {
+                icon = createIconForType(itemConfig.type)
+            }
+            icon.position = CGPoint(x: x, y: y)
+            icon.zPosition = 1001
+            hudLayer.addChild(icon)
+            
+            // Counter label
+            let label = SKLabelNode(fontNamed: "Helvetica-Bold")
+            label.fontSize = 14
+            label.fontColor = .white
+            label.text = "0/\(itemConfig.count)"
+            label.position = CGPoint(x: x, y: y - 35)
+            label.verticalAlignmentMode = .center
+            hudLayer.addChild(label)
+            
+            itemCounters[itemConfig.type] = (icon: icon, label: label, found: 0, total: itemConfig.count)
         }
     }
     
-    private func createTree() -> SKNode {
-        let tree = SKNode()
+    private func createIconForType(_ type: String) -> SKNode {
+        // Use the same placeholder creation as SearchableItemNode but smaller
+        let node = SKNode()
         
-        // Trunk
-        let trunk = SKShapeNode(rectOf: CGSize(width: 20, height: 60), cornerRadius: 5)
-        trunk.fillColor = SKColor(red: 0.55, green: 0.35, blue: 0.20, alpha: 1.0)
-        trunk.strokeColor = .clear
-        trunk.position = CGPoint(x: 0, y: 30)
-        tree.addChild(trunk)
-        
-        // Foliage layers
-        let foliageColors = [
-            SKColor(red: 0.30, green: 0.55, blue: 0.30, alpha: 1.0),
-            SKColor(red: 0.35, green: 0.60, blue: 0.35, alpha: 1.0),
-            SKColor(red: 0.40, green: 0.65, blue: 0.40, alpha: 1.0)
+        let colors: [String: SKColor] = [
+            "rock": SKColor(red: 0.55, green: 0.55, blue: 0.52, alpha: 1.0),
+            "flower": SKColor(red: 1.0, green: 0.75, blue: 0.80, alpha: 1.0),
+            "mushroom": SKColor(red: 0.95, green: 0.35, blue: 0.35, alpha: 1.0),
+            "duck": SKColor(red: 1.0, green: 0.90, blue: 0.60, alpha: 1.0)
         ]
         
-        let foliageData: [(y: CGFloat, radius: CGFloat, colorIndex: Int)] = [
-            (70, 50, 0), (95, 40, 1), (115, 30, 2)
-        ]
+        let color = colors[type] ?? SKColor.gray
         
-        for (y, radius, colorIndex) in foliageData {
-            let foliage = SKShapeNode(circleOfRadius: radius)
-            foliage.fillColor = foliageColors[colorIndex]
-            foliage.strokeColor = .clear
-            foliage.position = CGPoint(x: 0, y: y)
-            tree.addChild(foliage)
-        }
+        let circle = SKShapeNode(circleOfRadius: 16)
+        circle.fillColor = color
+        circle.strokeColor = .black
+        circle.lineWidth = 2
+        node.addChild(circle)
         
-        // Add gentle sway animation
-        let swayRight = SKAction.rotate(byAngle: 0.02, duration: 2.0)
-        let swayLeft = SKAction.rotate(byAngle: -0.02, duration: 2.0)
-        tree.run(SKAction.repeatForever(SKAction.sequence([swayRight, swayLeft, swayLeft, swayRight])))
-        
-        return tree
+        return node
     }
     
-    private func addFlowers(in size: CGSize) {
-        let flowerColors: [SKColor] = [
-            SKColor(red: 1.0, green: 0.75, blue: 0.80, alpha: 1.0),   // Pink
-            SKColor(red: 1.0, green: 0.95, blue: 0.70, alpha: 1.0),   // Yellow
-            SKColor(red: 0.85, green: 0.75, blue: 1.0, alpha: 1.0),   // Lavender
-            SKColor(red: 1.0, green: 0.85, blue: 0.70, alpha: 1.0)    // Peach
-        ]
-        
-        for _ in 0..<40 {
-            let flower = createFlower(color: flowerColors.randomElement()!)
-            let x = CGFloat.random(in: 50...(size.width - 50))
-            let y = CGFloat.random(in: 50...(size.height * 0.25))
-            flower.position = CGPoint(x: x - size.width / 2, y: y - size.height / 2)
-            flower.zPosition = -70
-            flower.setScale(CGFloat.random(in: 0.5...1.0))
-            backgroundNode.addChild(flower)
-        }
-    }
-    
-    private func createFlower(color: SKColor) -> SKNode {
-        let flower = SKNode()
-        
-        // Petals
-        for i in 0..<5 {
-            let petal = SKShapeNode(ellipseOf: CGSize(width: 12, height: 20))
-            petal.fillColor = color
-            petal.strokeColor = .clear
-            let angle = CGFloat(i) * (2 * .pi / 5)
-            petal.position = CGPoint(x: cos(angle) * 8, y: sin(angle) * 8)
-            petal.zRotation = angle + .pi / 2
-            flower.addChild(petal)
-        }
-        
-        // Center
-        let center = SKShapeNode(circleOfRadius: 6)
-        center.fillColor = SKColor(red: 1.0, green: 0.85, blue: 0.40, alpha: 1.0)
-        center.strokeColor = .clear
-        flower.addChild(center)
-        
-        return flower
-    }
-    
-    private func addPond(in size: CGSize) {
-        // Pond shape
-        let pond = SKShapeNode(ellipseOf: CGSize(width: 350, height: 200))
-        pond.fillColor = SKColor(red: 0.40, green: 0.70, blue: 0.85, alpha: 0.8)
-        pond.strokeColor = SKColor(red: 0.50, green: 0.75, blue: 0.88, alpha: 0.5)
-        pond.lineWidth = 8
-        pond.position = CGPoint(x: size.width * 0.65 - size.width / 2, y: size.height * 0.2 - size.height / 2)
-        pond.zPosition = -75
-        backgroundNode.addChild(pond)
-        
-        // Water shimmer effect
-        let shimmer = SKAction.sequence([
-            SKAction.fadeAlpha(to: 0.7, duration: 1.5),
-            SKAction.fadeAlpha(to: 0.9, duration: 1.5)
-        ])
-        pond.run(SKAction.repeatForever(shimmer))
-        
-        // Lily pads
-        let lilyPositions: [(x: CGFloat, y: CGFloat)] = [
-            (size.width * 0.60, size.height * 0.22),
-            (size.width * 0.70, size.height * 0.18),
-            (size.width * 0.68, size.height * 0.24)
-        ]
-        
-        for (x, y) in lilyPositions {
-            let lily = SKShapeNode(ellipseOf: CGSize(width: 30, height: 25))
-            lily.fillColor = SKColor(red: 0.30, green: 0.60, blue: 0.30, alpha: 0.9)
-            lily.strokeColor = .clear
-            lily.position = CGPoint(x: x - size.width / 2, y: y - size.height / 2)
-            lily.zPosition = -74
-            backgroundNode.addChild(lily)
-        }
-    }
+    // MARK: - Camera
     
     private func calculateCameraBounds() {
         guard let view = view else { return }
@@ -335,14 +336,11 @@ class GameScene: SKScene {
         let viewSize = view.bounds.size
         let bgSize = backgroundNode.size
         
-        // Camera cannot move beyond background edges
-        // Background is positioned at (bgSize.width/2, bgSize.height/2)
         minCameraX = viewSize.width / 2
         maxCameraX = bgSize.width - viewSize.width / 2
         minCameraY = viewSize.height / 2
         maxCameraY = bgSize.height - viewSize.height / 2
         
-        // If background is smaller than view, lock camera
         if bgSize.width < viewSize.width {
             minCameraX = bgSize.width / 2
             maxCameraX = bgSize.width / 2
@@ -352,78 +350,10 @@ class GameScene: SKScene {
             maxCameraY = bgSize.height / 2
         }
         
-        // Center camera initially
-        cameraNode.position = CGPoint(
-            x: bgSize.width / 2,
-            y: bgSize.height / 2
-        )
+        cameraNode.position = CGPoint(x: bgSize.width / 2, y: bgSize.height / 2)
     }
     
-    private func setupHUD() {
-        // Remove old HUD if exists
-        hudLayer?.removeFromParent()
-        
-        hudLayer = SKNode()
-        hudLayer.zPosition = 1000
-        cameraNode.addChild(hudLayer)
-        
-        guard let view = view else { return }
-        
-        // Position counter below safe area (Dynamic Island / notch)
-        let safeAreaTop: CGFloat = 60 // Safe margin from top
-        let counterYPosition = view.bounds.height / 2 - safeAreaTop - 40
-        
-        // Counter background
-        let counterBg = SKShapeNode(rectOf: CGSize(width: 150, height: 50), cornerRadius: 12)
-        counterBg.fillColor = SKColor(white: 0, alpha: 0.6)
-        counterBg.strokeColor = SKColor(white: 1, alpha: 0.3)
-        counterBg.lineWidth = 2
-        counterBg.position = CGPoint(x: 0, y: counterYPosition)
-        hudLayer.addChild(counterBg)
-        
-        // Item icon (duck or mushroom depending on level)
-        let itemIcon: SKNode
-        let itemType = getCurrentItemType()
-        if let texture = AssetLoader.texture(named: itemType) {
-            let sprite = SKSpriteNode(texture: texture)
-            sprite.size = CGSize(width: 32, height: 32)
-            itemIcon = sprite
-        } else {
-            // Fallback: create simple icon programmatically
-            itemIcon = createItemIcon(type: itemType)
-        }
-        itemIcon.position = CGPoint(x: -50, y: counterYPosition)
-        itemIcon.name = "itemIcon"
-        hudLayer.addChild(itemIcon)
-        
-        // Counter label (just numbers now)
-        counterLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
-        counterLabel.fontSize = 24
-        counterLabel.fontColor = .white
-        counterLabel.verticalAlignmentMode = .center
-        counterLabel.horizontalAlignmentMode = .left
-        counterLabel.position = CGPoint(x: -25, y: counterYPosition)
-        hudLayer.addChild(counterLabel)
-        
-        // Timer label (top left)
-        timerLabel = SKLabelNode(fontNamed: "Helvetica")
-        timerLabel.fontSize = 20
-        timerLabel.fontColor = .white
-        timerLabel.horizontalAlignmentMode = .left
-        timerLabel.verticalAlignmentMode = .top
-        timerLabel.position = CGPoint(x: -view.bounds.width / 2 + 20, y: counterYPosition)
-        timerLabel.text = "⏱ 0:00"
-        hudLayer.addChild(timerLabel)
-        
-        updateCounter()
-    }
-    
-    private func createItemIcon(type: String) -> SKNode {
-        if type == "mushroom" {
-            return createMushroomIcon()
-        }
-        return createDuckIcon()
-    }
+    // MARK: - Update
     
     override func update(_ currentTime: TimeInterval) {
         super.update(currentTime)
@@ -435,141 +365,48 @@ class GameScene: SKScene {
         let elapsed = Date().timeIntervalSince(startTime)
         let minutes = Int(elapsed) / 60
         let seconds = Int(elapsed) % 60
-        timerLabel.text = String(format: "⏱ %d:%02d", minutes, seconds)
+        timerLabel?.text = String(format: "⏱ %d:%02d", minutes, seconds)
     }
     
-    private func createDuckIcon() -> SKNode {
-        // Simple programmatic duck icon
-        let icon = SKShapeNode(ellipseOf: CGSize(width: 28, height: 22))
-        icon.fillColor = SKColor(red: 1.0, green: 0.9, blue: 0.6, alpha: 1.0)
-        icon.strokeColor = SKColor(red: 0.9, green: 0.8, blue: 0.5, alpha: 1.0)
-        icon.lineWidth = 2
+    private func updateProgress() {
+        guard let level = currentLevel, let view = view else { return }
         
-        // Simple beak
-        let beak = SKShapeNode(circleOfRadius: 4)
-        beak.fillColor = SKColor(red: 1.0, green: 0.6, blue: 0.2, alpha: 1.0)
-        beak.strokeColor = .clear
-        beak.position = CGPoint(x: 14, y: 0)
-        icon.addChild(beak)
+        let totalFound = foundCounts.values.reduce(0, +)
+        let totalItems = level.totalItemCount
+        let progress = CGFloat(totalFound) / CGFloat(totalItems)
         
-        return icon
-    }
-    
-    private func createMushroomIcon() -> SKNode {
-        let mushroom = SKNode()
+        let panelWidth = view.bounds.width - 32
+        let progressBgWidth = panelWidth - 40
+        let fillWidth = progressBgWidth * progress
         
-        // Cap
-        let cap = SKShapeNode(ellipseOf: CGSize(width: 26, height: 20))
-        cap.fillColor = SKColor(red: 0.95, green: 0.4, blue: 0.4, alpha: 1.0)
-        cap.strokeColor = SKColor(red: 0.7, green: 0.3, blue: 0.3, alpha: 1.0)
-        cap.lineWidth = 2
-        cap.position = CGPoint(x: 0, y: 4)
-        mushroom.addChild(cap)
-        
-        // Stem
-        let stem = SKShapeNode(rectOf: CGSize(width: 10, height: 12), cornerRadius: 2)
-        stem.fillColor = SKColor(red: 0.95, green: 0.92, blue: 0.85, alpha: 1.0)
-        stem.strokeColor = SKColor(red: 0.8, green: 0.75, blue: 0.65, alpha: 1.0)
-        stem.lineWidth = 2
-        stem.position = CGPoint(x: 0, y: -6)
-        mushroom.addChild(stem)
-        
-        // Spots
-        let spot1 = SKShapeNode(circleOfRadius: 3)
-        spot1.fillColor = .white
-        spot1.strokeColor = .clear
-        spot1.position = CGPoint(x: -6, y: 6)
-        mushroom.addChild(spot1)
-        
-        let spot2 = SKShapeNode(circleOfRadius: 2.5)
-        spot2.fillColor = .white
-        spot2.strokeColor = .clear
-        spot2.position = CGPoint(x: 6, y: 5)
-        mushroom.addChild(spot2)
-        
-        return mushroom
-    }
-    
-    private func setupSearchableItems() {
-        // Items spawn only within background bounds (not beyond it)
-        let bgSize = backgroundNode.size
-        let itemCount = 20
-        
-        totalCount = itemCount
-        
-        // Playable area = background size with margin
-        // Background is centered, so coordinates are relative to scene origin
-        let margin: CGFloat = 80
-        let minX: CGFloat = margin
-        let maxX: CGFloat = bgSize.width - margin
-        let minY: CGFloat = margin
-        let maxY: CGFloat = bgSize.height - margin
-        
-        let itemType = currentLevel == 1 ? "duck" : "mushroom"
-
-        // Prevent overlap / touching: simple rejection sampling with min distance.
-        // Item size is 64x64; use slightly larger spacing to avoid edge contact.
-        var minDistance: CGFloat = 74
-        var placedPositions: [CGPoint] = []
-
-        // Try a few passes decreasing spacing if the background is too dense to fit 20 items.
-        while placedPositions.count < itemCount && minDistance >= 54 {
-            let maxAttempts = itemCount * 300
-            var attempts = 0
-
-            while placedPositions.count < itemCount && attempts < maxAttempts {
-                attempts += 1
-                let randomX = CGFloat.random(in: minX...maxX)
-                let randomY = CGFloat.random(in: minY...maxY)
-                let candidatePoint = CGPoint(x: randomX, y: randomY)
-
-                var isValidPlacement = true
-                for existingPoint in placedPositions {
-                    let deltaX = candidatePoint.x - existingPoint.x
-                    let deltaY = candidatePoint.y - existingPoint.y
-                    if (deltaX * deltaX + deltaY * deltaY) < (minDistance * minDistance) {
-                        isValidPlacement = false
-                        break
-                    }
-                }
-
-                if isValidPlacement {
-                    placedPositions.append(candidatePoint)
-                }
-            }
-
-            if placedPositions.count < itemCount {
-                minDistance -= 6
-            }
+        if let progressFill = hudLayer.childNode(withName: "progressFill") as? SKShapeNode {
+            progressFill.removeFromParent()
+            
+            let newFill = SKShapeNode(rectOf: CGSize(width: fillWidth, height: 8), cornerRadius: 4)
+            newFill.fillColor = SKColor(red: 0.4, green: 0.8, blue: 0.4, alpha: 1.0)
+            newFill.strokeColor = .clear
+            
+            let bottomY = -view.bounds.height / 2 + 80
+            let panelHeight: CGFloat = 90
+            newFill.position = CGPoint(x: -progressBgWidth / 2 + fillWidth / 2, y: bottomY + panelHeight / 2 - 35)
+            newFill.name = "progressFill"
+            hudLayer.addChild(newFill)
         }
-
-        for placedPoint in placedPositions {
-            let item = SearchableItemNode(type: itemType)
-            item.position = placedPoint
-            item.delegate = self
-            item.zPosition = 50
-            addChild(item)
-            searchableItems.append(item)
-        }
-        
-        updateCounter()
     }
+    
+    // MARK: - Gestures
     
     private func setupGestures() {
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
         view?.addGestureRecognizer(panGesture)
     }
     
-    // MARK: - Gesture Handling
-    
     @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
         let translation = gesture.translation(in: view)
         
-        // Invert Y because SpriteKit Y is inverted
         let newX = cameraNode.position.x - translation.x
         let newY = cameraNode.position.y + translation.y
         
-        // Clamp to bounds
         cameraNode.position.x = max(minCameraX, min(maxCameraX, newX))
         cameraNode.position.y = max(minCameraY, min(maxCameraY, newY))
         
@@ -583,9 +420,8 @@ class GameScene: SKScene {
         let locationInCamera = touch.location(in: cameraNode)
         let locationInScene = touch.location(in: self)
         
+        // Check HUD buttons
         let nodesInCamera = cameraNode.nodes(at: locationInCamera)
-        
-        // Check for button tap
         for node in nodesInCamera {
             if node.name == "nextLevelButton" {
                 loadNextLevel()
@@ -597,7 +433,7 @@ class GameScene: SKScene {
             }
         }
         
-        // Check for searchable items
+        // Check searchable items
         let touchedNodes = nodes(at: locationInScene)
         for node in touchedNodes {
             if let searchable = node as? SearchableItemNode {
@@ -607,117 +443,82 @@ class GameScene: SKScene {
         }
     }
     
+    // MARK: - Level Transitions
+    
     private func loadNextLevel() {
-        currentLevel += 1
+        currentLevelIndex += 1
+        if currentLevelIndex >= levelIds.count {
+            currentLevelIndex = 0  // Loop back
+        }
         clearLevel()
-        loadLevel()
+        loadCurrentLevel()
     }
     
     private func restartGame() {
-        currentLevel = 1
+        currentLevelIndex = 0
         clearLevel()
-        loadLevel()
+        loadCurrentLevel()
     }
     
     private func clearLevel() {
-        // Remove all victory UI and buttons (explicit names so everything disappears)
-        let namesToRemove: Set<String> = [
-            "victoryOverlay",
-            "victoryPanel",
-            "victoryLabel",
-            "timeLabel",
-            "nextLevelButton",
-            "nextLevelButtonLabel",
-            "restartButton",
-            "restartButtonLabel",
-        ]
-
-        // Remove from cameraNode (where buttons live)
+        // Remove victory UI
         cameraNode.children.forEach { node in
-            if let name = node.name, namesToRemove.contains(name) {
+            if node.name?.contains("victory") == true ||
+               node.name?.contains("Button") == true ||
+               node.name == "timeLabel" {
                 node.removeFromParent()
             }
         }
         
-        // Also brute-force remove any orphan button nodes (safety net)
-        cameraNode.children.filter { node in
-            if let name = node.name {
-                return name.contains("Button") || name.contains("victory") || name.contains("timeLabel")
-            }
-            return false
-        }.forEach { $0.removeFromParent() }
-        
-        // Clear items
+        // Clear items and decorations
         searchableItems.forEach { $0.removeFromParent() }
         searchableItems.removeAll()
-        foundCount = 0
+        decorations.forEach { $0.removeFromParent() }
+        decorations.removeAll()
         
-        // Remove old background and children
+        // Clear HUD
+        hudLayer?.removeFromParent()
+        itemCounters.removeAll()
+        
+        // Remove background
         backgroundNode?.removeFromParent()
         children.filter { $0 != cameraNode }.forEach { $0.removeFromParent() }
     }
     
-    private func loadLevel() {
-        // Reload scene
-        setupBackground()
-        setupHUD()
-        setupSearchableItems()
-        
-        // Reset timer
-        levelStartTime = Date()
-        
-        SoundManager.shared.playItemFound()
-    }
-    
-    // MARK: - Game Logic
-    
-    private func updateCounter() {
-        counterLabel.text = "\(foundCount)/\(totalCount)"
-    }
-    
-    private func getCurrentItemType() -> String {
-        return currentLevel == 1 ? "duck" : "mushroom"
-    }
-    
-    private func getCurrentItemEmoji() -> String {
-        return currentLevel == 1 ? "🦆" : "🍄"
-    }
+    // MARK: - Victory
     
     private func checkVictory() {
-        if foundCount >= totalCount {
+        guard let level = currentLevel else { return }
+        
+        let totalFound = foundCounts.values.reduce(0, +)
+        if totalFound >= level.totalItemCount {
             showVictory()
         }
     }
     
     private func showVictory() {
-        // Stop timer
         let finalTime = levelStartTime.map { Date().timeIntervalSince($0) } ?? 0
         levelStartTime = nil
         
-        // Play victory sound
         SoundManager.shared.playVictory()
         
-        // Dark overlay for contrast
+        // Overlay
         let overlay = SKShapeNode(rectOf: CGSize(width: 4000, height: 4000))
         overlay.fillColor = SKColor(white: 0, alpha: 0)
         overlay.strokeColor = .clear
-        overlay.position = .zero
         overlay.zPosition = 1990
         overlay.name = "victoryOverlay"
         cameraNode.addChild(overlay)
-        
-        let fadeIn = SKAction.fadeAlpha(to: 0.7, duration: 0.3)
-        overlay.run(fadeIn)
+        overlay.run(SKAction.fadeAlpha(to: 0.7, duration: 0.3))
         
         guard let view = view else { return }
-        let viewWidth = view.bounds.width
+        let panelWidth = min(view.bounds.width - 40, 350)
         
-        // Contrasting victory panel (fits in screen)
-        let panelWidth = min(viewWidth - 40, 400)
-        let victoryBg = SKShapeNode(rectOf: CGSize(width: panelWidth, height: 220), cornerRadius: 20)
+        // Victory panel
+        let victoryBg = SKShapeNode(rectOf: CGSize(width: panelWidth, height: 200), cornerRadius: 20)
         victoryBg.fillColor = SKColor(red: 1.0, green: 0.85, blue: 0.0, alpha: 1.0)
         victoryBg.strokeColor = SKColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
-        victoryBg.lineWidth = 8
+        victoryBg.lineWidth = 6
         victoryBg.position = .zero
         victoryBg.zPosition = 2000
         victoryBg.setScale(0)
@@ -726,77 +527,133 @@ class GameScene: SKScene {
         
         // ALL FOUND label
         let victoryLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
-        victoryLabel.text = "ALL FOUND!"
-        victoryLabel.fontSize = 36
+        victoryLabel.text = "🎉 ALL FOUND!"
+        victoryLabel.fontSize = 32
         victoryLabel.fontColor = SKColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
-        victoryLabel.position = CGPoint(x: 0, y: 50)
+        victoryLabel.position = CGPoint(x: 0, y: 40)
         victoryLabel.verticalAlignmentMode = .center
         victoryLabel.zPosition = 2010
         victoryLabel.setScale(0)
-        victoryLabel.name = "victoryLabel"
         cameraNode.addChild(victoryLabel)
         
-        // Time label
+        // Time
         let minutes = Int(finalTime) / 60
         let seconds = Int(finalTime) % 60
         let timeLabel = SKLabelNode(fontNamed: "Helvetica")
         timeLabel.text = String(format: "Time: %d:%02d", minutes, seconds)
-        timeLabel.fontSize = 24
+        timeLabel.fontSize = 20
         timeLabel.fontColor = SKColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1.0)
-        timeLabel.position = CGPoint(x: 0, y: 10)
+        timeLabel.position = CGPoint(x: 0, y: 5)
         timeLabel.verticalAlignmentMode = .center
         timeLabel.zPosition = 2010
         timeLabel.setScale(0)
         timeLabel.name = "timeLabel"
         cameraNode.addChild(timeLabel)
         
-        // Animated entrance with bounce
-        let scaleUp = SKAction.scale(to: 1.2, duration: 0.3)
-        scaleUp.timingMode = .easeOut
-        let scaleDown = SKAction.scale(to: 1.0, duration: 0.2)
-        scaleDown.timingMode = .easeInEaseOut
-        let bounce = SKAction.sequence([scaleUp, scaleDown])
-        
+        // Animate
+        let bounce = SKAction.sequence([
+            SKAction.scale(to: 1.1, duration: 0.2),
+            SKAction.scale(to: 1.0, duration: 0.1)
+        ])
         victoryBg.run(bounce)
         victoryLabel.run(bounce)
         timeLabel.run(bounce)
         
-        // Show button after animation
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+        // Show button
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.showLevelButton()
         }
     }
     
     private func showLevelButton() {
-        let maxLevel = 2
-        let isLastLevel = currentLevel >= maxLevel
+        let isLastLevel = currentLevelIndex >= levelIds.count - 1
         
-        let button = SKShapeNode(rectOf: CGSize(width: 220, height: 55), cornerRadius: 12)
-        button.fillColor = isLastLevel ? 
-            SKColor(red: 0.8, green: 0.4, blue: 0.4, alpha: 1.0) :
+        let button = SKShapeNode(rectOf: CGSize(width: 180, height: 50), cornerRadius: 12)
+        button.fillColor = isLastLevel ?
+            SKColor(red: 0.4, green: 0.7, blue: 0.9, alpha: 1.0) :
             SKColor(red: 0.4, green: 0.8, blue: 0.4, alpha: 1.0)
         button.strokeColor = SKColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
-        button.lineWidth = 4
-        button.position = CGPoint(x: 0, y: -60)
+        button.lineWidth = 3
+        button.position = CGPoint(x: 0, y: -50)
         button.zPosition = 2020
         button.name = isLastLevel ? "restartButton" : "nextLevelButton"
         button.alpha = 0
         cameraNode.addChild(button)
         
         let buttonLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
-        buttonLabel.text = isLastLevel ? "↻ Restart" : "Next Level ▶"
-        buttonLabel.fontSize = 26
+        buttonLabel.text = isLastLevel ? "↻ Play Again" : "Next Level ▶"
+        buttonLabel.fontSize = 22
         buttonLabel.fontColor = .white
         buttonLabel.verticalAlignmentMode = .center
-        buttonLabel.position = button.position
+        buttonLabel.position = CGPoint(x: 0, y: -50)
         buttonLabel.zPosition = 2030
         buttonLabel.alpha = 0
-        buttonLabel.name = button.name! + "Label"
+        buttonLabel.name = (button.name ?? "") + "Label"
         cameraNode.addChild(buttonLabel)
         
         let fadeIn = SKAction.fadeIn(withDuration: 0.3)
         button.run(fadeIn)
         buttonLabel.run(fadeIn)
+    }
+    
+    // MARK: - Procedural Fallback
+    
+    private func createGradientTexture(size: CGSize) -> SKTexture {
+        UIGraphicsBeginImageContextWithOptions(size, true, 1.0)
+        guard let context = UIGraphicsGetCurrentContext() else {
+            UIGraphicsEndImageContext()
+            return SKTexture()
+        }
+        
+        let skyColors = [
+            UIColor(red: 0.53, green: 0.81, blue: 0.92, alpha: 1.0).cgColor,
+            UIColor(red: 0.69, green: 0.88, blue: 0.90, alpha: 1.0).cgColor,
+            UIColor(red: 0.98, green: 0.91, blue: 0.71, alpha: 1.0).cgColor
+        ]
+        let skyGradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: skyColors as CFArray, locations: [0.0, 0.5, 1.0])!
+        context.drawLinearGradient(skyGradient, start: CGPoint(x: 0, y: size.height), end: CGPoint(x: 0, y: size.height * 0.35), options: [])
+        
+        let groundColors = [
+            UIColor(red: 0.56, green: 0.74, blue: 0.56, alpha: 1.0).cgColor,
+            UIColor(red: 0.42, green: 0.63, blue: 0.42, alpha: 1.0).cgColor,
+            UIColor(red: 0.33, green: 0.52, blue: 0.33, alpha: 1.0).cgColor
+        ]
+        let groundGradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: groundColors as CFArray, locations: [0.0, 0.5, 1.0])!
+        context.drawLinearGradient(groundGradient, start: CGPoint(x: 0, y: size.height * 0.4), end: CGPoint(x: 0, y: 0), options: [])
+        
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return SKTexture(image: image ?? UIImage())
+    }
+    
+    private func addProceduralScenery() {
+        // Add simple clouds and trees as decorations
+        let bgSize = backgroundNode.size
+        
+        // Clouds
+        for i in 0..<5 {
+            let cloud = DecorationNode(type: "cloud", animation: .drifting)
+            cloud.position = CGPoint(
+                x: CGFloat(i) * (bgSize.width / 5) + 100,
+                y: bgSize.height - CGFloat.random(in: 100...200)
+            )
+            cloud.zPosition = -90
+            addChild(cloud)
+            decorations.append(cloud)
+        }
+        
+        // Trees
+        for i in 0..<6 {
+            let tree = DecorationNode(type: "tree", animation: .swaying)
+            tree.position = CGPoint(
+                x: CGFloat(i) * (bgSize.width / 6) + 100,
+                y: CGFloat.random(in: bgSize.height * 0.15...bgSize.height * 0.35)
+            )
+            tree.zPosition = -80
+            addChild(tree)
+            decorations.append(tree)
+        }
     }
 }
 
@@ -804,18 +661,24 @@ class GameScene: SKScene {
 
 extension GameScene: SearchableItemDelegate {
     func itemWasFound(_ item: SearchableItemNode) {
-        foundCount += 1
-        updateCounter()
+        let type = item.itemType
+        foundCounts[type] = (foundCounts[type] ?? 0) + 1
+        
+        // Update counter
+        if var counter = itemCounters[type] {
+            counter.found = foundCounts[type] ?? 0
+            counter.label.text = "\(counter.found)/\(counter.total)"
+            itemCounters[type] = counter
+            
+            // Visual feedback when complete
+            if counter.found >= counter.total {
+                let scaleUp = SKAction.scale(to: 1.2, duration: 0.1)
+                let scaleDown = SKAction.scale(to: 1.0, duration: 0.1)
+                counter.icon.run(SKAction.sequence([scaleUp, scaleDown]))
+            }
+        }
+        
+        updateProgress()
         checkVictory()
     }
 }
-
-// swiftlint:enable trailing_comma
-// swiftlint:enable function_body_length
-// swiftlint:enable trailing_whitespace
-// swiftlint:enable line_length
-// swiftlint:enable large_tuple
-// swiftlint:enable identifier_name
-// swiftlint:enable type_body_length
-// swiftlint:enable file_length
-// swiftlint:enable blanket_disable_command

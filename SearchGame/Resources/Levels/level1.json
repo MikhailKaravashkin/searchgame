@@ -1,12 +1,62 @@
 {
-  "id": "level1",
-  "name": "Village Day",
-  "background": "bg_farm_day",
-  "itemCount": 20,
-  "searchItems": [
-    {
-      "type": "duck",
-      "count": 20
-    }
-  ]
+    "id": "level1",
+    "name": "Village Day",
+    "background": "bg_farm_day",
+    "ambientSound": "ambient_birds",
+    "decorations": [
+        {
+            "type": "cloud",
+            "animation": "drifting",
+            "speed": 0.5,
+            "zPosition": -90,
+            "positions": [
+                {"x": 200, "y": 900},
+                {"x": 600, "y": 950},
+                {"x": 1100, "y": 880},
+                {"x": 1500, "y": 920}
+            ]
+        },
+        {
+            "type": "tree",
+            "animation": "swaying",
+            "speed": 0.8,
+            "zPosition": -70,
+            "positions": [
+                {"x": 150, "y": 400},
+                {"x": 500, "y": 350},
+                {"x": 900, "y": 420},
+                {"x": 1300, "y": 380},
+                {"x": 1700, "y": 400}
+            ]
+        }
+    ],
+    "searchItems": [
+        {
+            "type": "rock",
+            "count": 4,
+            "animation": "bobbing",
+            "zPosition": 20,
+            "positions": [
+                {"x": 300, "y": 250},
+                {"x": 700, "y": 180},
+                {"x": 1100, "y": 300},
+                {"x": 1500, "y": 220}
+            ]
+        },
+        {
+            "type": "flower",
+            "count": 4,
+            "animation": "swaying",
+            "zPosition": 25,
+            "positions": [
+                {"x": 450, "y": 150},
+                {"x": 850, "y": 280},
+                {"x": 1250, "y": 160},
+                {"x": 1650, "y": 320}
+            ]
+        }
+    ],
+    "spawnZones": [
+        [100, 100, 1700, 500]
+    ]
 }

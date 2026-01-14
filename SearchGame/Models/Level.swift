@@ -1,6 +1,20 @@
 import Foundation
 import CoreGraphics
 
+// MARK: - Animation Types
+
+enum AnimationType: String, Codable {
+    case none
+    case drifting      // Clouds moving slowly
+    case flowing       // Water/river texture animation
+    case driving       // Vehicle moving along path
+    case walking       // Character walking back and forth
+    case floating      // Gentle bobbing on water
+    case flickering    // Fire/light flickering
+    case swaying       // Trees/flowers swaying in wind
+    case bobbing       // Idle slight movement
+}
+
 // MARK: - Level Model
 
 struct Level: Codable, Identifiable {
@@ -8,22 +22,28 @@ struct Level: Codable, Identifiable {
     let name: String
     let background: String
     let ambientSound: String?
+    let decorations: [DecorationConfig]?
     let searchItems: [SearchItemConfig]
-    let interactiveObjects: [InteractiveObjectConfig]?
-    let particles: [ParticleConfig]?
     let spawnZones: [SpawnZone]?
     
     var totalItemCount: Int {
         searchItems.reduce(0) { $0 + $1.count }
     }
+    
+    var itemTypes: [String] {
+        searchItems.map { $0.type }
+    }
 }
 
-// MARK: - Search Item Configuration
+// MARK: - Decoration Configuration
 
-struct SearchItemConfig: Codable {
+struct DecorationConfig: Codable {
     let type: String
-    let count: Int
+    let animation: AnimationType
     let positions: [Position]?
+    let path: [Position]?  // For driving/walking animations
+    let speed: CGFloat?
+    let zPosition: CGFloat?
     
     struct Position: Codable {
         let x: CGFloat
@@ -35,25 +55,22 @@ struct SearchItemConfig: Codable {
     }
 }
 
-// MARK: - Interactive Object Configuration
+// MARK: - Search Item Configuration
 
-struct InteractiveObjectConfig: Codable {
+struct SearchItemConfig: Codable {
     let type: String
-    let sound: String
-    let probability: Double
-    let positions: [SearchItemConfig.Position]?
-}
-
-// MARK: - Particle Configuration
-
-struct ParticleConfig: Codable {
-    let type: String
-    let zones: [[CGFloat]]?
-    let position: [CGFloat]?
+    let count: Int
+    let animation: AnimationType?
+    let positions: [Position]?
+    let zPosition: CGFloat?
     
-    var cgPosition: CGPoint? {
-        guard let pos = position, pos.count >= 2 else { return nil }
-        return CGPoint(x: pos[0], y: pos[1])
+    struct Position: Codable {
+        let x: CGFloat
+        let y: CGFloat
+        
+        var cgPoint: CGPoint {
+            CGPoint(x: x, y: y)
+        }
     }
 }
 
