@@ -7,56 +7,78 @@
         {
             "type": "cloud",
             "animation": "drifting",
-            "speed": 0.5,
-            "zPosition": -90,
+            "speed": 0.3,
+            "zPosition": -50,
             "positions": [
-                {"x": 200, "y": 900},
-                {"x": 600, "y": 950},
-                {"x": 1100, "y": 880},
-                {"x": 1500, "y": 920}
+                {"x": 200, "y": 920},
+                {"x": 500, "y": 950},
+                {"x": 900, "y": 900},
+                {"x": 1300, "y": 940},
+                {"x": 1600, "y": 910}
             ]
         },
         {
-            "type": "tree",
-            "animation": "swaying",
+            "type": "bird",
+            "animation": "drifting",
             "speed": 0.8,
-            "zPosition": -70,
+            "zPosition": -40,
             "positions": [
-                {"x": 150, "y": 400},
-                {"x": 500, "y": 350},
-                {"x": 900, "y": 420},
-                {"x": 1300, "y": 380},
-                {"x": 1700, "y": 400}
+                {"x": 300, "y": 850},
+                {"x": 1100, "y": 880}
             ]
         }
     ],
     "searchItems": [
         {
-            "type": "rock",
+            "type": "cat_white",
             "count": 4,
             "animation": "bobbing",
-            "zPosition": 20,
+            "zPosition": 30,
             "positions": [
-                {"x": 300, "y": 250},
-                {"x": 700, "y": 180},
-                {"x": 1100, "y": 300},
-                {"x": 1500, "y": 220}
+                {"x": 250, "y": 450},
+                {"x": 650, "y": 380},
+                {"x": 1050, "y": 520},
+                {"x": 1450, "y": 420}
             ]
         },
         {
-            "type": "flower",
+            "type": "panda",
             "count": 4,
-            "animation": "swaying",
+            "animation": "bobbing",
+            "zPosition": 30,
+            "positions": [
+                {"x": 180, "y": 320},
+                {"x": 550, "y": 280},
+                {"x": 950, "y": 350},
+                {"x": 1350, "y": 300}
+            ]
+        },
+        {
+            "type": "basket",
+            "count": 4,
+            "animation": "bobbing",
             "zPosition": 25,
             "positions": [
-                {"x": 450, "y": 150},
-                {"x": 850, "y": 280},
-                {"x": 1250, "y": 160},
-                {"x": 1650, "y": 320}
+                {"x": 350, "y": 200},
+                {"x": 750, "y": 250},
+                {"x": 1150, "y": 180},
+                {"x": 1550, "y": 220}
+            ]
+        },
+        {
+            "type": "flower_pink",
+            "count": 4,
+            "animation": "swaying",
+            "zPosition": 20,
+            "positions": [
+                {"x": 420, "y": 150},
+                {"x": 820, "y": 120},
+                {"x": 1220, "y": 160},
+                {"x": 1620, "y": 140}
             ]
         }
     ],
     "spawnZones": [
-        [100, 100, 1700, 500]
+        [100, 100, 1700, 600]
     ]
 }

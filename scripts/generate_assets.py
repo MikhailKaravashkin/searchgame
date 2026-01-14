@@ -453,38 +453,78 @@ def main() -> None:
                 "children's book style, no text, no watermark"
             ),
         ),
+        # === SEARCHABLE ITEMS (match bg_farm_day kawaii style) ===
         ImageSpec(
-            name="duck",
-            filename="duck.png",
+            name="cat_white",
+            filename="cat_white.png",
             size="1024x1024",
             transparent=True,
             prompt=(
-                "Single cute duck character, simple kawaii vector icon, "
-                "thick clean black outline, flat pastel yellow body, no gradients, "
-                "2D side view, centered, FLOATING (not standing on anything), plenty of padding around the duck, "
-                "SOLID PURE WHITE BACKGROUND (#FFFFFF) ONLY, "
-                "NO ground, NO grass, NO floor, NO base, NO platform, NO ellipse, NO oval, "
-                "NO shadow, NO contact shadow, NO drop shadow, NO halo, "
-                "NO sticker border, NO white outline outside the black outline, "
-                "NO brush strokes, NO texture, NO background pattern, NO grid, NO checkerboard, "
-                "crisp clean cutout edges, perfect for game sprite"
+                "Single tiny cute white cat, simple kawaii style like children's book, "
+                "thick black outline, flat white body, pink cheeks, dot eyes, no gradients, "
+                "2D side profile, sitting, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground, clean vector style"
             ),
         ),
         ImageSpec(
-            name="mushroom",
-            filename="mushroom.png",
+            name="basket",
+            filename="basket.png",
             size="1024x1024",
             transparent=True,
             prompt=(
-                "Single cute mushroom character, simple kawaii vector icon, "
-                "thick clean black outline, flat pastel red cap with white dots, cream stem, no gradients, "
-                "2D front view, centered, FLOATING (not growing from ground), plenty of padding around the mushroom, "
-                "SOLID PURE WHITE BACKGROUND (#FFFFFF) ONLY, "
-                "NO ground, NO grass, NO dirt, NO floor, NO base, NO platform, NO ellipse, NO oval, "
-                "NO shadow, NO contact shadow, NO drop shadow, NO halo, "
-                "NO sticker border, NO white outline outside the black outline, "
-                "NO brush strokes, NO texture, NO background pattern, NO grid, NO checkerboard, "
-                "crisp clean cutout edges, perfect for game sprite"
+                "Single tiny cute woven basket with apples, simple kawaii style, "
+                "thick black outline, flat brown basket, pastel red apples, no gradients, "
+                "2D front view, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground, clean vector style"
+            ),
+        ),
+        ImageSpec(
+            name="flower_pink",
+            filename="flower_pink.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single tiny cute pink flower with short green stem, simple kawaii style, "
+                "thick black outline, flat pastel pink petals, yellow center, no gradients, "
+                "2D front view, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground, clean vector style"
+            ),
+        ),
+        ImageSpec(
+            name="panda",
+            filename="panda.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single tiny cute panda, simple kawaii style like children's book, "
+                "thick black outline, flat white and black, pink cheeks, dot eyes, no gradients, "
+                "2D front view, sitting, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground, clean vector style"
+            ),
+        ),
+        # === ANIMATED DECORATIONS ===
+        ImageSpec(
+            name="cloud",
+            filename="cloud.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single simple white fluffy cloud, kawaii style, "
+                "thick black outline, flat white color, no gradients, "
+                "2D view, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, clean vector style"
+            ),
+        ),
+        ImageSpec(
+            name="bird",
+            filename="bird.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single tiny cute bird flying, simple kawaii style, "
+                "thick black outline, flat pastel blue body, orange beak, no gradients, "
+                "2D side view, wings spread, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, clean vector style"
             ),
         ),
     ]
