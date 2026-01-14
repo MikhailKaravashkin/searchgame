@@ -453,41 +453,102 @@ def main() -> None:
                 "children's book style, no text, no watermark"
             ),
         ),
-        # === SEARCHABLE ITEMS (match bg_farm_day kawaii style) ===
+        # === WORLD OBJECTS (buildings, nature) ===
+        ImageSpec(
+            name="house_pink",
+            filename="house_pink.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single cute small house, simple kawaii style, "
+                "thick black outline, pastel pink walls, brown roof, small windows, "
+                "2D front view, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground"
+            ),
+        ),
+        ImageSpec(
+            name="house_yellow",
+            filename="house_yellow.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single cute small house, simple kawaii style, "
+                "thick black outline, pastel yellow walls, brown roof, small windows, "
+                "2D front view, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground"
+            ),
+        ),
+        ImageSpec(
+            name="tree_green",
+            filename="tree_green.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single cute round tree, simple kawaii style, "
+                "thick black outline, pastel green round foliage, brown trunk, "
+                "2D front view, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground"
+            ),
+        ),
+        ImageSpec(
+            name="tree_pink",
+            filename="tree_pink.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single cute cherry blossom tree, simple kawaii style, "
+                "thick black outline, pastel pink round foliage, brown trunk, "
+                "2D front view, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground"
+            ),
+        ),
+        ImageSpec(
+            name="fence",
+            filename="fence.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single section of cute wooden fence, simple kawaii style, "
+                "thick black outline, light brown wood, "
+                "2D front view, horizontal, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground"
+            ),
+        ),
+        ImageSpec(
+            name="bush",
+            filename="bush.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single cute small round bush, simple kawaii style, "
+                "thick black outline, pastel green color, "
+                "2D front view, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground"
+            ),
+        ),
+        # === ANIMATED CHARACTERS ===
         ImageSpec(
             name="cat_white",
             filename="cat_white.png",
             size="1024x1024",
             transparent=True,
             prompt=(
-                "Single tiny cute white cat, simple kawaii style like children's book, "
-                "thick black outline, flat white body, pink cheeks, dot eyes, no gradients, "
+                "Single tiny cute white cat, simple kawaii style, "
+                "thick black outline, flat white body, pink cheeks, dot eyes, "
+                "2D side profile, walking pose, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground"
+            ),
+        ),
+        ImageSpec(
+            name="cat_gray",
+            filename="cat_gray.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single tiny cute gray cat, simple kawaii style, "
+                "thick black outline, flat gray body, pink cheeks, dot eyes, "
                 "2D side profile, sitting, centered, FLOATING, "
-                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground, clean vector style"
-            ),
-        ),
-        ImageSpec(
-            name="basket",
-            filename="basket.png",
-            size="1024x1024",
-            transparent=True,
-            prompt=(
-                "Single tiny cute woven basket with apples, simple kawaii style, "
-                "thick black outline, flat brown basket, pastel red apples, no gradients, "
-                "2D front view, centered, FLOATING, "
-                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground, clean vector style"
-            ),
-        ),
-        ImageSpec(
-            name="flower_pink",
-            filename="flower_pink.png",
-            size="1024x1024",
-            transparent=True,
-            prompt=(
-                "Single tiny cute pink flower with short green stem, simple kawaii style, "
-                "thick black outline, flat pastel pink petals, yellow center, no gradients, "
-                "2D front view, centered, FLOATING, "
-                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground, clean vector style"
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground"
             ),
         ),
         ImageSpec(
@@ -496,13 +557,25 @@ def main() -> None:
             size="1024x1024",
             transparent=True,
             prompt=(
-                "Single tiny cute panda, simple kawaii style like children's book, "
-                "thick black outline, flat white and black, pink cheeks, dot eyes, no gradients, "
+                "Single tiny cute panda, simple kawaii style, "
+                "thick black outline, flat white and black, pink cheeks, "
                 "2D front view, sitting, centered, FLOATING, "
-                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground, clean vector style"
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground"
             ),
         ),
-        # === ANIMATED DECORATIONS ===
+        ImageSpec(
+            name="person",
+            filename="person.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single tiny cute person character, simple kawaii style, "
+                "thick black outline, simple clothes, pink cheeks, "
+                "2D side view, walking pose, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground"
+            ),
+        ),
+        # === DECORATIONS ===
         ImageSpec(
             name="cloud",
             filename="cloud.png",
@@ -510,21 +583,57 @@ def main() -> None:
             transparent=True,
             prompt=(
                 "Single simple white fluffy cloud, kawaii style, "
-                "thick black outline, flat white color, no gradients, "
+                "thick black outline, flat white color, "
                 "2D view, centered, FLOATING, "
-                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, clean vector style"
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow"
             ),
         ),
         ImageSpec(
-            name="bird",
-            filename="bird.png",
+            name="sun",
+            filename="sun.png",
             size="1024x1024",
             transparent=True,
             prompt=(
-                "Single tiny cute bird flying, simple kawaii style, "
-                "thick black outline, flat pastel blue body, orange beak, no gradients, "
-                "2D side view, wings spread, centered, FLOATING, "
-                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, clean vector style"
+                "Single cute smiling sun, kawaii style, "
+                "thick black outline, pastel yellow, simple face, "
+                "2D view, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow"
+            ),
+        ),
+        ImageSpec(
+            name="flower_pink",
+            filename="flower_pink.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single tiny cute pink flower, simple kawaii style, "
+                "thick black outline, pastel pink petals, yellow center, "
+                "2D front view, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground"
+            ),
+        ),
+        ImageSpec(
+            name="flower_yellow",
+            filename="flower_yellow.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single tiny cute yellow flower, simple kawaii style, "
+                "thick black outline, pastel yellow petals, orange center, "
+                "2D front view, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground"
+            ),
+        ),
+        ImageSpec(
+            name="basket",
+            filename="basket.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single cute woven basket with apples, simple kawaii style, "
+                "thick black outline, brown basket, red apples, "
+                "2D front view, centered, FLOATING, "
+                "SOLID PURE WHITE BACKGROUND ONLY, NO shadow, NO ground"
             ),
         ),
     ]

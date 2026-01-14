@@ -5,16 +5,13 @@ class GameScene: SKScene {
     // MARK: - Properties
     
     private var cameraNode: SKCameraNode!
-    private var backgroundNode: SKSpriteNode!
     private var hudLayer: SKNode!
     private var itemCounters: [String: (icon: SKNode, label: SKLabelNode, found: Int, total: Int)] = [:]
     
-    private var currentLevel: Level?
-    private var currentLevelIndex: Int = 0
-    private var levelIds: [String] = ["level1"]  // Add more levels here
+    private var worldBuilder: WorldBuilder?
+    private var worldSize = CGSize(width: 2400, height: 1400)  // Scrollable world
     
     private var searchableItems: [SearchableItemNode] = []
-    private var decorations: [DecorationNode] = []
     private var foundCounts: [String: Int] = [:]
     
     private var levelStartTime: Date?
@@ -31,66 +28,36 @@ class GameScene: SKScene {
     override func didMove(to view: SKView) {
         super.didMove(to: view)
         
-        backgroundColor = SKColor(red: 0.15, green: 0.15, blue: 0.2, alpha: 1.0)
+        backgroundColor = SKColor(red: 0.7, green: 0.85, blue: 0.95, alpha: 1.0)
         
         setupCamera()
-        loadCurrentLevel()
+        buildWorld()
         setupGestures()
         
         SoundManager.shared.playBackgroundMusic()
     }
     
-    // MARK: - Level Loading
+    // MARK: - World Building
     
-    private func loadCurrentLevel() {
-        let levelId = levelIds[currentLevelIndex]
+    private func buildWorld() {
+        // Create procedural animated world
+        worldBuilder = WorldBuilder(scene: self, worldSize: worldSize)
+        worldBuilder?.buildWorld()
         
-        do {
-            currentLevel = try LevelLoader.load(levelId: levelId)
-            setupLevel()
-        } catch {
-            print("Failed to load level \(levelId): \(error)")
-            // Fallback to procedural level
-            setupFallbackLevel()
-        }
-    }
-    
-    private func setupLevel() {
-        guard let level = currentLevel else { return }
+        // Get searchable items from world builder
+        searchableItems = worldBuilder?.searchableNodes ?? []
         
-        // Reset state
+        // Initialize found counts
         foundCounts = [:]
-        for item in level.searchItems {
-            foundCounts[item.type] = 0
+        let itemTypes = Set(searchableItems.map { $0.itemType })
+        for itemType in itemTypes {
+            foundCounts[itemType] = 0
         }
         
-        setupBackground()
-        setupDecorations()
-        setupSearchableItems()
         setupHUD()
+        calculateCameraBounds()
         
         levelStartTime = Date()
-    }
-    
-    private func setupFallbackLevel() {
-        // Create a simple fallback level if JSON loading fails
-        let fallbackLevel = """
-        {
-            "id": "fallback",
-            "name": "Fallback Level",
-            "background": "bg_farm_day",
-            "searchItems": [
-                {"type": "rock", "count": 4, "animation": "bobbing"},
-                {"type": "flower", "count": 4, "animation": "swaying"}
-            ]
-        }
-        """
-        
-        if let data = fallbackLevel.data(using: .utf8),
-           let level = try? LevelLoader.loadFromData(data) {
-            currentLevel = level
-            setupLevel()
-        }
     }
     
     // MARK: - Setup
@@ -101,116 +68,13 @@ class GameScene: SKScene {
         addChild(cameraNode)
     }
     
-    private func setupBackground() {
-        guard let level = currentLevel else { return }
-        
-        // Try to load generated background
-        if let tex = AssetLoader.texture(named: level.background) {
-            let backgroundSize = tex.size()
-            backgroundNode = SKSpriteNode(texture: tex, size: backgroundSize)
-            backgroundNode.position = CGPoint(x: backgroundSize.width / 2, y: backgroundSize.height / 2)
-            backgroundNode.zPosition = -100
-            addChild(backgroundNode)
-            calculateCameraBounds()
-            return
-        }
-        
-        // Fallback to procedural background
-        let backgroundSize = CGSize(width: 2048, height: 1536)
-        backgroundNode = SKSpriteNode(texture: createGradientTexture(size: backgroundSize), size: backgroundSize)
-        backgroundNode.position = CGPoint(x: backgroundSize.width / 2, y: backgroundSize.height / 2)
-        backgroundNode.zPosition = -100
-        addChild(backgroundNode)
-        
-        addProceduralScenery()
-        calculateCameraBounds()
-    }
-    
-    private func setupDecorations() {
-        guard let level = currentLevel, let decorationConfigs = level.decorations else { return }
-        
-        for config in decorationConfigs {
-            let positions = config.positions ?? [DecorationConfig.Position(x: 500, y: 500)]
-            let path = config.path?.map { $0.cgPoint }
-            let speed = config.speed ?? 1.0
-            let zPos = config.zPosition ?? -50
-            
-            for pos in positions {
-                let decoration = DecorationNode(
-                    type: config.type,
-                    animation: config.animation,
-                    path: path,
-                    animSpeed: speed
-                )
-                decoration.position = pos.cgPoint
-                decoration.zPosition = zPos
-                addChild(decoration)
-                decorations.append(decoration)
-            }
-        }
-    }
-    
-    private func setupSearchableItems() {
-        guard let level = currentLevel else { return }
-        
-        let bgSize = backgroundNode.size
-        let margin: CGFloat = 80
-        
-        for itemConfig in level.searchItems {
-            let animation = itemConfig.animation ?? .bobbing
-            let zPos = itemConfig.zPosition ?? 50
-            
-            // Use predefined positions or generate random ones
-            let positions: [CGPoint]
-            if let predefinedPositions = itemConfig.positions {
-                positions = predefinedPositions.map { $0.cgPoint }
-            } else {
-                // Generate random positions within spawn zones or background bounds
-                positions = generateRandomPositions(
-                    count: itemConfig.count,
-                    zones: level.spawnZones,
-                    bounds: CGRect(x: margin, y: margin, width: bgSize.width - margin * 2, height: bgSize.height - margin * 2)
-                )
-            }
-            
-            for (index, pos) in positions.prefix(itemConfig.count).enumerated() {
-                let item = SearchableItemNode(type: itemConfig.type, animation: animation)
-                item.position = pos
-                item.zPosition = zPos + CGFloat(index) * 0.1  // Slight z variation
-                item.delegate = self
-                addChild(item)
-                searchableItems.append(item)
-            }
-        }
-    }
-    
-    private func generateRandomPositions(count: Int, zones: [SpawnZone]?, bounds: CGRect) -> [CGPoint] {
-        var positions: [CGPoint] = []
-        
-        for _ in 0..<count {
-            let point: CGPoint
-            if let zones = zones, !zones.isEmpty {
-                let zone = zones.randomElement()!
-                point = zone.randomPoint()
-            } else {
-                point = CGPoint(
-                    x: CGFloat.random(in: bounds.minX...bounds.maxX),
-                    y: CGFloat.random(in: bounds.minY...bounds.maxY)
-                )
-            }
-            positions.append(point)
-        }
-        
-        return positions
-    }
-    
     private func setupHUD() {
         hudLayer?.removeFromParent()
         hudLayer = SKNode()
         hudLayer.zPosition = 1000
         cameraNode.addChild(hudLayer)
         
-        guard let view = view, let level = currentLevel else { return }
+        guard let view = view else { return }
         
         let safeAreaTop: CGFloat = 60
         let topY = view.bounds.height / 2 - safeAreaTop
@@ -239,7 +103,7 @@ class GameScene: SKScene {
         
         // Level name
         let levelLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
-        levelLabel.text = level.name
+        levelLabel.text = "Find All Items"
         levelLabel.fontSize = 14
         levelLabel.fontColor = SKColor(white: 0.7, alpha: 1.0)
         levelLabel.position = CGPoint(x: 0, y: bottomY + panelHeight / 2 - 18)
@@ -261,35 +125,40 @@ class GameScene: SKScene {
         progressFill.name = "progressFill"
         hudLayer.addChild(progressFill)
         
-        // Item counters
-        let itemCount = level.searchItems.count
+        // Item counters - group by type from searchable items
+        let itemTypes = Set(searchableItems.map { $0.itemType })
+        let typeCounts = Dictionary(grouping: searchableItems, by: { $0.itemType }).mapValues { $0.count }
+        let sortedTypes = Array(itemTypes).sorted()
+        
+        let itemCount = sortedTypes.count
         let spacing = panelWidth / CGFloat(itemCount + 1)
         let startX = -panelWidth / 2 + spacing
         
         itemCounters.removeAll()
         
-        for (index, itemConfig) in level.searchItems.enumerated() {
-            let x = startX + spacing * CGFloat(index)
-            let y = bottomY - 10
+        for (index, itemType) in sortedTypes.enumerated() {
+            let typeCount = typeCounts[itemType] ?? 0
+            let xPos = startX + spacing * CGFloat(index)
+            let yPos = bottomY - 10
             
             // Item icon container
             let iconBg = SKShapeNode(rectOf: CGSize(width: 50, height: 50), cornerRadius: 10)
             iconBg.fillColor = SKColor(white: 0.15, alpha: 1.0)
             iconBg.strokeColor = SKColor(white: 0.4, alpha: 0.5)
             iconBg.lineWidth = 2
-            iconBg.position = CGPoint(x: x, y: y)
+            iconBg.position = CGPoint(x: xPos, y: yPos)
             hudLayer.addChild(iconBg)
             
             // Item icon
             let icon: SKNode
-            if let texture = AssetLoader.texture(named: itemConfig.type) {
+            if let texture = AssetLoader.texture(named: itemType) {
                 let sprite = SKSpriteNode(texture: texture)
                 sprite.size = CGSize(width: 36, height: 36)
                 icon = sprite
             } else {
-                icon = createIconForType(itemConfig.type)
+                icon = createIconForType(itemType)
             }
-            icon.position = CGPoint(x: x, y: y)
+            icon.position = CGPoint(x: xPos, y: yPos)
             icon.zPosition = 1001
             hudLayer.addChild(icon)
             
@@ -297,12 +166,12 @@ class GameScene: SKScene {
             let label = SKLabelNode(fontNamed: "Helvetica-Bold")
             label.fontSize = 14
             label.fontColor = .white
-            label.text = "0/\(itemConfig.count)"
-            label.position = CGPoint(x: x, y: y - 35)
+            label.text = "0/\(typeCount)"
+            label.position = CGPoint(x: xPos, y: yPos - 35)
             label.verticalAlignmentMode = .center
             hudLayer.addChild(label)
             
-            itemCounters[itemConfig.type] = (icon: icon, label: label, found: 0, total: itemConfig.count)
+            itemCounters[itemType] = (icon: icon, label: label, found: 0, total: typeCount)
         }
     }
     
@@ -334,23 +203,22 @@ class GameScene: SKScene {
         guard let view = view else { return }
         
         let viewSize = view.bounds.size
-        let bgSize = backgroundNode.size
         
         minCameraX = viewSize.width / 2
-        maxCameraX = bgSize.width - viewSize.width / 2
+        maxCameraX = worldSize.width - viewSize.width / 2
         minCameraY = viewSize.height / 2
-        maxCameraY = bgSize.height - viewSize.height / 2
+        maxCameraY = worldSize.height - viewSize.height / 2
         
-        if bgSize.width < viewSize.width {
-            minCameraX = bgSize.width / 2
-            maxCameraX = bgSize.width / 2
+        if worldSize.width < viewSize.width {
+            minCameraX = worldSize.width / 2
+            maxCameraX = worldSize.width / 2
         }
-        if bgSize.height < viewSize.height {
-            minCameraY = bgSize.height / 2
-            maxCameraY = bgSize.height / 2
+        if worldSize.height < viewSize.height {
+            minCameraY = worldSize.height / 2
+            maxCameraY = worldSize.height / 2
         }
         
-        cameraNode.position = CGPoint(x: bgSize.width / 2, y: bgSize.height / 2)
+        cameraNode.position = CGPoint(x: worldSize.width / 2, y: worldSize.height / 2)
     }
     
     // MARK: - Update
@@ -369,11 +237,11 @@ class GameScene: SKScene {
     }
     
     private func updateProgress() {
-        guard let level = currentLevel, let view = view else { return }
+        guard let view = view else { return }
         
         let totalFound = foundCounts.values.reduce(0, +)
-        let totalItems = level.totalItemCount
-        let progress = CGFloat(totalFound) / CGFloat(totalItems)
+        let totalItems = searchableItems.count + totalFound  // Include already found
+        let progress = totalItems > 0 ? CGFloat(totalFound) / CGFloat(searchableItems.count + totalFound) : 0
         
         let panelWidth = view.bounds.width - 32
         let progressBgWidth = panelWidth - 40
@@ -423,10 +291,6 @@ class GameScene: SKScene {
         // Check HUD buttons
         let nodesInCamera = cameraNode.nodes(at: locationInCamera)
         for node in nodesInCamera {
-            if node.name == "nextLevelButton" {
-                loadNextLevel()
-                return
-            }
             if node.name == "restartButton" {
                 restartGame()
                 return
@@ -445,19 +309,9 @@ class GameScene: SKScene {
     
     // MARK: - Level Transitions
     
-    private func loadNextLevel() {
-        currentLevelIndex += 1
-        if currentLevelIndex >= levelIds.count {
-            currentLevelIndex = 0  // Loop back
-        }
-        clearLevel()
-        loadCurrentLevel()
-    }
-    
     private func restartGame() {
-        currentLevelIndex = 0
         clearLevel()
-        loadCurrentLevel()
+        buildWorld()
     }
     
     private func clearLevel() {
@@ -470,28 +324,25 @@ class GameScene: SKScene {
             }
         }
         
-        // Clear items and decorations
-        searchableItems.forEach { $0.removeFromParent() }
+        // Clear world
+        worldBuilder?.cleanup()
+        worldBuilder = nil
+        
         searchableItems.removeAll()
-        decorations.forEach { $0.removeFromParent() }
-        decorations.removeAll()
         
         // Clear HUD
         hudLayer?.removeFromParent()
         itemCounters.removeAll()
         
-        // Remove background
-        backgroundNode?.removeFromParent()
+        // Remove all children except camera
         children.filter { $0 != cameraNode }.forEach { $0.removeFromParent() }
     }
     
     // MARK: - Victory
     
     private func checkVictory() {
-        guard let level = currentLevel else { return }
-        
-        let totalFound = foundCounts.values.reduce(0, +)
-        if totalFound >= level.totalItemCount {
+        // All items found when searchableItems is empty (all removed)
+        if searchableItems.isEmpty {
             showVictory()
         }
     }
@@ -566,29 +417,25 @@ class GameScene: SKScene {
     }
     
     private func showLevelButton() {
-        let isLastLevel = currentLevelIndex >= levelIds.count - 1
-        
         let button = SKShapeNode(rectOf: CGSize(width: 180, height: 50), cornerRadius: 12)
-        button.fillColor = isLastLevel ?
-            SKColor(red: 0.4, green: 0.7, blue: 0.9, alpha: 1.0) :
-            SKColor(red: 0.4, green: 0.8, blue: 0.4, alpha: 1.0)
+        button.fillColor = SKColor(red: 0.4, green: 0.8, blue: 0.4, alpha: 1.0)
         button.strokeColor = SKColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
         button.lineWidth = 3
         button.position = CGPoint(x: 0, y: -50)
         button.zPosition = 2020
-        button.name = isLastLevel ? "restartButton" : "nextLevelButton"
+        button.name = "restartButton"
         button.alpha = 0
         cameraNode.addChild(button)
         
         let buttonLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
-        buttonLabel.text = isLastLevel ? "↻ Play Again" : "Next Level ▶"
+        buttonLabel.text = "↻ Play Again"
         buttonLabel.fontSize = 22
         buttonLabel.fontColor = .white
         buttonLabel.verticalAlignmentMode = .center
         buttonLabel.position = CGPoint(x: 0, y: -50)
         buttonLabel.zPosition = 2030
         buttonLabel.alpha = 0
-        buttonLabel.name = (button.name ?? "") + "Label"
+        buttonLabel.name = "restartButtonLabel"
         cameraNode.addChild(buttonLabel)
         
         let fadeIn = SKAction.fadeIn(withDuration: 0.3)
@@ -596,65 +443,6 @@ class GameScene: SKScene {
         buttonLabel.run(fadeIn)
     }
     
-    // MARK: - Procedural Fallback
-    
-    private func createGradientTexture(size: CGSize) -> SKTexture {
-        UIGraphicsBeginImageContextWithOptions(size, true, 1.0)
-        guard let context = UIGraphicsGetCurrentContext() else {
-            UIGraphicsEndImageContext()
-            return SKTexture()
-        }
-        
-        let skyColors = [
-            UIColor(red: 0.53, green: 0.81, blue: 0.92, alpha: 1.0).cgColor,
-            UIColor(red: 0.69, green: 0.88, blue: 0.90, alpha: 1.0).cgColor,
-            UIColor(red: 0.98, green: 0.91, blue: 0.71, alpha: 1.0).cgColor
-        ]
-        let skyGradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: skyColors as CFArray, locations: [0.0, 0.5, 1.0])!
-        context.drawLinearGradient(skyGradient, start: CGPoint(x: 0, y: size.height), end: CGPoint(x: 0, y: size.height * 0.35), options: [])
-        
-        let groundColors = [
-            UIColor(red: 0.56, green: 0.74, blue: 0.56, alpha: 1.0).cgColor,
-            UIColor(red: 0.42, green: 0.63, blue: 0.42, alpha: 1.0).cgColor,
-            UIColor(red: 0.33, green: 0.52, blue: 0.33, alpha: 1.0).cgColor
-        ]
-        let groundGradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: groundColors as CFArray, locations: [0.0, 0.5, 1.0])!
-        context.drawLinearGradient(groundGradient, start: CGPoint(x: 0, y: size.height * 0.4), end: CGPoint(x: 0, y: 0), options: [])
-        
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        return SKTexture(image: image ?? UIImage())
-    }
-    
-    private func addProceduralScenery() {
-        // Add simple clouds and trees as decorations
-        let bgSize = backgroundNode.size
-        
-        // Clouds
-        for i in 0..<5 {
-            let cloud = DecorationNode(type: "cloud", animation: .drifting)
-            cloud.position = CGPoint(
-                x: CGFloat(i) * (bgSize.width / 5) + 100,
-                y: bgSize.height - CGFloat.random(in: 100...200)
-            )
-            cloud.zPosition = -90
-            addChild(cloud)
-            decorations.append(cloud)
-        }
-        
-        // Trees
-        for i in 0..<6 {
-            let tree = DecorationNode(type: "tree", animation: .swaying)
-            tree.position = CGPoint(
-                x: CGFloat(i) * (bgSize.width / 6) + 100,
-                y: CGFloat.random(in: bgSize.height * 0.15...bgSize.height * 0.35)
-            )
-            tree.zPosition = -80
-            addChild(tree)
-            decorations.append(tree)
-        }
-    }
 }
 
 // MARK: - SearchableItemDelegate
@@ -663,6 +451,11 @@ extension GameScene: SearchableItemDelegate {
     func itemWasFound(_ item: SearchableItemNode) {
         let type = item.itemType
         foundCounts[type] = (foundCounts[type] ?? 0) + 1
+        
+        // Remove from searchable items
+        if let index = searchableItems.firstIndex(of: item) {
+            searchableItems.remove(at: index)
+        }
         
         // Update counter
         if var counter = itemCounters[type] {
