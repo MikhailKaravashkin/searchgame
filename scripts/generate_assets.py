@@ -429,14 +429,15 @@ def main() -> None:
             size=default_bg_size,
             transparent=False,
             prompt=(
-                "Cute kawaii village scene panoramic illustration in simple cartoon style, "
-                "pastel colors (soft pink, mint green, baby blue, pale yellow), "
-                "many small details filling entire frame: tiny houses, cats in profile, "
-                "pandas, puppies, flowers, trees, all drawn with thick black outlines, "
-                "flat colors without gradients or shading, 2D schematic style, "
-                "densely packed with cute characters and tiny scenes everywhere, "
-                "simple shapes, children's book illustration style, "
-                "no text, no watermark"
+                "Cute kawaii village farm scene panoramic illustration, simple 2D cartoon style, "
+                "flat pastel palette (soft pink, mint green, baby blue, pale yellow, soft peach), "
+                "THICK clean black outlines, flat colors (no gradients, no shading), "
+                "DENSELY packed with small scenes and tiny details everywhere: little houses, fences, trees, "
+                "flowers, cats in profile, pandas, puppies, tiny characters, "
+                "FULL BLEED edge-to-edge composition: fill EVERY corner and edge, "
+                "NO empty margins, NO blank areas, NO large solid-color zones, NO vignette, NO border, "
+                "uniform detail density across the whole frame, "
+                "children's picture book style, no text, no watermark"
             ),
         ),
         ImageSpec(
@@ -445,12 +446,15 @@ def main() -> None:
             size=default_bg_size,
             transparent=False,
             prompt=(
-                "Cute kawaii forest evening scene panoramic illustration in simple cartoon style, "
-                "soft pastel colors (lavender, peach, mint, pale pink), "
-                "many small details: tiny mushrooms, cats, pandas, trees, flowers, houses, "
-                "all drawn with thick black outlines, flat colors no gradients, "
-                "2D schematic style, densely packed scene, warm sunset lighting, "
-                "children's book style, no text, no watermark"
+                "Cute kawaii forest evening scene panoramic illustration, simple 2D cartoon style, "
+                "flat pastel palette (lavender, soft peach, mint, pale pink, warm beige), "
+                "THICK clean black outlines, flat colors (no gradients, no shading), "
+                "DENSELY packed with small scenes and tiny details everywhere: mushrooms, leaves, "
+                "cats, pandas, trees, flowers, little houses, tiny characters, "
+                "FULL BLEED edge-to-edge composition: fill EVERY corner and edge, "
+                "NO empty margins, NO blank areas, NO large solid-color zones, NO vignette, NO border, "
+                "uniform detail density across the whole frame, warm cozy evening mood, "
+                "children's picture book style, no text, no watermark"
             ),
         ),
         ImageSpec(
@@ -462,6 +466,7 @@ def main() -> None:
                 "Single cute duck character, simple kawaii vector icon, "
                 "thick clean black outline, flat pastel yellow body, no gradients, "
                 "2D side view, centered, FLOATING (not standing on anything), plenty of padding around the duck, "
+                "color palette must match the level background: soft pastel pink/mint/baby blue/pale yellow, "
                 "SOLID PURE WHITE BACKGROUND (#FFFFFF) ONLY, "
                 "NO ground, NO grass, NO floor, NO base, NO platform, NO ellipse, NO oval, "
                 "NO shadow, NO contact shadow, NO drop shadow, NO halo, "
@@ -479,6 +484,7 @@ def main() -> None:
                 "Single cute mushroom character, simple kawaii vector icon, "
                 "thick clean black outline, flat pastel red cap with white dots, cream stem, no gradients, "
                 "2D front view, centered, FLOATING (not growing from ground), plenty of padding around the mushroom, "
+                "color palette must match the level background: lavender/soft peach/mint/pale pink/warm beige, "
                 "SOLID PURE WHITE BACKGROUND (#FFFFFF) ONLY, "
                 "NO ground, NO grass, NO dirt, NO floor, NO base, NO platform, NO ellipse, NO oval, "
                 "NO shadow, NO contact shadow, NO drop shadow, NO halo, "
