@@ -13,6 +13,8 @@ class GameScene: SKScene {
     private var foundCount: Int = 0
     private var totalCount: Int = 0
     private var currentLevel: Int = 1
+    private var levelStartTime: Date?
+    private var timerLabel: SKLabelNode!
     
     // Camera bounds
     private var minCameraX: CGFloat = 0
@@ -33,6 +35,9 @@ class GameScene: SKScene {
         setupSearchableItems()
         setupGestures()
         
+        // Start level timer
+        levelStartTime = Date()
+        
         // Start background music
         SoundManager.shared.playBackgroundMusic()
     }
@@ -46,8 +51,11 @@ class GameScene: SKScene {
     }
     
     private func setupBackground() {
+        // Load background based on current level
+        let bgName = currentLevel == 1 ? "bg_farm_day" : "bg_forest_evening"
+        
         // Prefer generated/real art if present in bundle, fallback to procedural scene.
-        if let tex = AssetLoader.texture(named: "bg_farm_day") {
+        if let tex = AssetLoader.texture(named: bgName) {
             let backgroundSize = tex.size()
             backgroundNode = SKSpriteNode(texture: tex, size: backgroundSize)
             backgroundNode.position = CGPoint(x: backgroundSize.width / 2, y: backgroundSize.height / 2)
@@ -318,10 +326,22 @@ class GameScene: SKScene {
         let viewSize = view.bounds.size
         let bgSize = backgroundNode.size
         
+        // Camera cannot move beyond background edges
+        // Background is positioned at (bgSize.width/2, bgSize.height/2)
         minCameraX = viewSize.width / 2
         maxCameraX = bgSize.width - viewSize.width / 2
         minCameraY = viewSize.height / 2
         maxCameraY = bgSize.height - viewSize.height / 2
+        
+        // If background is smaller than view, lock camera
+        if bgSize.width < viewSize.width {
+            minCameraX = bgSize.width / 2
+            maxCameraX = bgSize.width / 2
+        }
+        if bgSize.height < viewSize.height {
+            minCameraY = bgSize.height / 2
+            maxCameraY = bgSize.height / 2
+        }
         
         // Center camera initially
         cameraNode.position = CGPoint(
@@ -331,6 +351,9 @@ class GameScene: SKScene {
     }
     
     private func setupHUD() {
+        // Remove old HUD if exists
+        hudLayer?.removeFromParent()
+        
         hudLayer = SKNode()
         hudLayer.zPosition = 1000
         cameraNode.addChild(hudLayer)
@@ -349,18 +372,20 @@ class GameScene: SKScene {
         counterBg.position = CGPoint(x: 0, y: counterYPosition)
         hudLayer.addChild(counterBg)
         
-        // Duck icon
-        let duckIcon: SKNode
-        if let duckTexture = AssetLoader.texture(named: "duck") {
-            let sprite = SKSpriteNode(texture: duckTexture)
+        // Item icon (duck or mushroom depending on level)
+        let itemIcon: SKNode
+        let itemType = getCurrentItemType()
+        if let texture = AssetLoader.texture(named: itemType) {
+            let sprite = SKSpriteNode(texture: texture)
             sprite.size = CGSize(width: 32, height: 32)
-            duckIcon = sprite
+            itemIcon = sprite
         } else {
-            // Fallback: create simple duck icon programmatically
-            duckIcon = createDuckIcon()
+            // Fallback: create simple icon programmatically
+            itemIcon = createItemIcon(type: itemType)
         }
-        duckIcon.position = CGPoint(x: -50, y: counterYPosition)
-        hudLayer.addChild(duckIcon)
+        itemIcon.position = CGPoint(x: -50, y: counterYPosition)
+        itemIcon.name = "itemIcon"
+        hudLayer.addChild(itemIcon)
         
         // Counter label (just numbers now)
         counterLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
@@ -371,7 +396,37 @@ class GameScene: SKScene {
         counterLabel.position = CGPoint(x: -25, y: counterYPosition)
         hudLayer.addChild(counterLabel)
         
+        // Timer label (top left)
+        timerLabel = SKLabelNode(fontNamed: "Helvetica")
+        timerLabel.fontSize = 20
+        timerLabel.fontColor = .white
+        timerLabel.horizontalAlignmentMode = .left
+        timerLabel.verticalAlignmentMode = .top
+        timerLabel.position = CGPoint(x: -view.bounds.width / 2 + 20, y: counterYPosition)
+        timerLabel.text = "⏱ 0:00"
+        hudLayer.addChild(timerLabel)
+        
         updateCounter()
+    }
+    
+    private func createItemIcon(type: String) -> SKNode {
+        if type == "mushroom" {
+            return createMushroomIcon()
+        }
+        return createDuckIcon()
+    }
+    
+    override func update(_ currentTime: TimeInterval) {
+        super.update(currentTime)
+        updateTimer()
+    }
+    
+    private func updateTimer() {
+        guard let startTime = levelStartTime else { return }
+        let elapsed = Date().timeIntervalSince(startTime)
+        let minutes = Int(elapsed) / 60
+        let seconds = Int(elapsed) % 60
+        timerLabel.text = String(format: "⏱ %d:%02d", minutes, seconds)
     }
     
     private func createDuckIcon() -> SKNode {
@@ -391,25 +446,63 @@ class GameScene: SKScene {
         return icon
     }
     
+    private func createMushroomIcon() -> SKNode {
+        let mushroom = SKNode()
+        
+        // Cap
+        let cap = SKShapeNode(ellipseOf: CGSize(width: 26, height: 20))
+        cap.fillColor = SKColor(red: 0.95, green: 0.4, blue: 0.4, alpha: 1.0)
+        cap.strokeColor = SKColor(red: 0.7, green: 0.3, blue: 0.3, alpha: 1.0)
+        cap.lineWidth = 2
+        cap.position = CGPoint(x: 0, y: 4)
+        mushroom.addChild(cap)
+        
+        // Stem
+        let stem = SKShapeNode(rectOf: CGSize(width: 10, height: 12), cornerRadius: 2)
+        stem.fillColor = SKColor(red: 0.95, green: 0.92, blue: 0.85, alpha: 1.0)
+        stem.strokeColor = SKColor(red: 0.8, green: 0.75, blue: 0.65, alpha: 1.0)
+        stem.lineWidth = 2
+        stem.position = CGPoint(x: 0, y: -6)
+        mushroom.addChild(stem)
+        
+        // Spots
+        let spot1 = SKShapeNode(circleOfRadius: 3)
+        spot1.fillColor = .white
+        spot1.strokeColor = .clear
+        spot1.position = CGPoint(x: -6, y: 6)
+        mushroom.addChild(spot1)
+        
+        let spot2 = SKShapeNode(circleOfRadius: 2.5)
+        spot2.fillColor = .white
+        spot2.strokeColor = .clear
+        spot2.position = CGPoint(x: 6, y: 5)
+        mushroom.addChild(spot2)
+        
+        return mushroom
+    }
+    
     private func setupSearchableItems() {
-        // Generate random positions across entire background
+        // Items spawn only within background bounds (not beyond it)
         let bgSize = backgroundNode.size
-        let itemCount = 20 // 20 ducks to find
+        let itemCount = 20
         
         totalCount = itemCount
         
-        // Define playable area (avoid edges)
-        let margin: CGFloat = 100
-        let minX = margin
-        let maxX = bgSize.width - margin
-        let minY = margin
-        let maxY = bgSize.height - margin
+        // Playable area = background size with margin
+        // Background is centered, so coordinates are relative to scene origin
+        let margin: CGFloat = 80
+        let minX: CGFloat = margin
+        let maxX: CGFloat = bgSize.width - margin
+        let minY: CGFloat = margin
+        let maxY: CGFloat = bgSize.height - margin
+        
+        let itemType = currentLevel == 1 ? "duck" : "mushroom"
         
         for _ in 0..<itemCount {
             let randomX = CGFloat.random(in: minX...maxX)
             let randomY = CGFloat.random(in: minY...maxY)
             
-            let item = SearchableItemNode(type: "duck")
+            let item = SearchableItemNode(type: itemType)
             item.position = CGPoint(x: randomX, y: randomY)
             item.delegate = self
             item.zPosition = 50
@@ -456,6 +549,10 @@ class GameScene: SKScene {
                 loadNextLevel()
                 return
             }
+            if node.name == "restartButton" {
+                restartGame()
+                return
+            }
         }
         
         // Check for searchable items
@@ -470,19 +567,45 @@ class GameScene: SKScene {
     
     private func loadNextLevel() {
         currentLevel += 1
+        clearLevel()
+        loadLevel()
+    }
+    
+    private func restartGame() {
+        currentLevel = 1
+        clearLevel()
+        loadLevel()
+    }
+    
+    private func clearLevel() {
+        // Remove all victory UI
+        cameraNode.children.forEach { node in
+            if node.name?.contains("victory") == true ||
+               node.name?.contains("Level") == true ||
+               node.name?.contains("Restart") == true ||
+               node.name == "timeLabel" {
+                node.removeFromParent()
+            }
+        }
         
-        // Clear current level
+        // Clear items
+        searchableItems.forEach { $0.removeFromParent() }
         searchableItems.removeAll()
         foundCount = 0
         
-        // Remove all children except camera
-        removeAllChildren()
-        addChild(cameraNode)
-        
+        // Remove old background and children
+        backgroundNode?.removeFromParent()
+        children.filter { $0 != cameraNode }.forEach { $0.removeFromParent() }
+    }
+    
+    private func loadLevel() {
         // Reload scene
         setupBackground()
         setupHUD()
         setupSearchableItems()
+        
+        // Reset timer
+        levelStartTime = Date()
         
         SoundManager.shared.playItemFound()
     }
@@ -493,6 +616,14 @@ class GameScene: SKScene {
         counterLabel.text = "\(foundCount)/\(totalCount)"
     }
     
+    private func getCurrentItemType() -> String {
+        return currentLevel == 1 ? "duck" : "mushroom"
+    }
+    
+    private func getCurrentItemEmoji() -> String {
+        return currentLevel == 1 ? "🦆" : "🍄"
+    }
+    
     private func checkVictory() {
         if foundCount >= totalCount {
             showVictory()
@@ -500,39 +631,65 @@ class GameScene: SKScene {
     }
     
     private func showVictory() {
+        // Stop timer
+        let finalTime = levelStartTime.map { Date().timeIntervalSince($0) } ?? 0
+        levelStartTime = nil
+        
         // Play victory sound
         SoundManager.shared.playVictory()
         
         // Dark overlay for contrast
-        let overlay = SKShapeNode(rectOf: CGSize(width: 2000, height: 2000))
+        let overlay = SKShapeNode(rectOf: CGSize(width: 4000, height: 4000))
         overlay.fillColor = SKColor(white: 0, alpha: 0)
         overlay.strokeColor = .clear
         overlay.position = .zero
         overlay.zPosition = 1990
+        overlay.name = "victoryOverlay"
         cameraNode.addChild(overlay)
         
         let fadeIn = SKAction.fadeAlpha(to: 0.7, duration: 0.3)
         overlay.run(fadeIn)
         
-        // Contrasting victory label with background
-        let victoryBg = SKShapeNode(rectOf: CGSize(width: 500, height: 120), cornerRadius: 20)
+        guard let view = view else { return }
+        let viewWidth = view.bounds.width
+        
+        // Contrasting victory panel (fits in screen)
+        let panelWidth = min(viewWidth - 40, 400)
+        let victoryBg = SKShapeNode(rectOf: CGSize(width: panelWidth, height: 220), cornerRadius: 20)
         victoryBg.fillColor = SKColor(red: 1.0, green: 0.85, blue: 0.0, alpha: 1.0)
         victoryBg.strokeColor = SKColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
         victoryBg.lineWidth = 8
         victoryBg.position = .zero
         victoryBg.zPosition = 2000
         victoryBg.setScale(0)
+        victoryBg.name = "victoryPanel"
         cameraNode.addChild(victoryBg)
         
+        // ALL FOUND label
         let victoryLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
-        victoryLabel.text = "🎉 ALL FOUND! 🎉"
-        victoryLabel.fontSize = 48
+        victoryLabel.text = "ALL FOUND!"
+        victoryLabel.fontSize = 36
         victoryLabel.fontColor = SKColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
-        victoryLabel.position = .zero
+        victoryLabel.position = CGPoint(x: 0, y: 50)
         victoryLabel.verticalAlignmentMode = .center
         victoryLabel.zPosition = 2010
         victoryLabel.setScale(0)
+        victoryLabel.name = "victoryLabel"
         cameraNode.addChild(victoryLabel)
+        
+        // Time label
+        let minutes = Int(finalTime) / 60
+        let seconds = Int(finalTime) % 60
+        let timeLabel = SKLabelNode(fontNamed: "Helvetica")
+        timeLabel.text = String(format: "Time: %d:%02d", minutes, seconds)
+        timeLabel.fontSize = 24
+        timeLabel.fontColor = SKColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1.0)
+        timeLabel.position = CGPoint(x: 0, y: 10)
+        timeLabel.verticalAlignmentMode = .center
+        timeLabel.zPosition = 2010
+        timeLabel.setScale(0)
+        timeLabel.name = "timeLabel"
+        cameraNode.addChild(timeLabel)
         
         // Animated entrance with bounce
         let scaleUp = SKAction.scale(to: 1.2, duration: 0.3)
@@ -543,43 +700,39 @@ class GameScene: SKScene {
         
         victoryBg.run(bounce)
         victoryLabel.run(bounce)
+        timeLabel.run(bounce)
         
-        // Pulse animation
-        let pulseUp = SKAction.scale(to: 1.05, duration: 0.8)
-        let pulseDown = SKAction.scale(to: 1.0, duration: 0.8)
-        let pulse = SKAction.sequence([pulseUp, pulseDown])
-        let repeatPulse = SKAction.repeatForever(pulse)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            victoryBg.run(repeatPulse)
-            victoryLabel.run(repeatPulse)
-        }
-        
-        // Show next level button after 2 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-            self?.showNextLevelButton()
+        // Show button after animation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+            self?.showLevelButton()
         }
     }
     
-    private func showNextLevelButton() {
-        let button = SKShapeNode(rectOf: CGSize(width: 250, height: 60), cornerRadius: 12)
-        button.fillColor = SKColor(red: 0.4, green: 0.8, blue: 0.4, alpha: 1.0)
-        button.strokeColor = SKColor(red: 0.2, green: 0.6, blue: 0.2, alpha: 1.0)
+    private func showLevelButton() {
+        let maxLevel = 2
+        let isLastLevel = currentLevel >= maxLevel
+        
+        let button = SKShapeNode(rectOf: CGSize(width: 220, height: 55), cornerRadius: 12)
+        button.fillColor = isLastLevel ? 
+            SKColor(red: 0.8, green: 0.4, blue: 0.4, alpha: 1.0) :
+            SKColor(red: 0.4, green: 0.8, blue: 0.4, alpha: 1.0)
+        button.strokeColor = SKColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
         button.lineWidth = 4
-        button.position = CGPoint(x: 0, y: -100)
+        button.position = CGPoint(x: 0, y: -60)
         button.zPosition = 2020
-        button.name = "nextLevelButton"
+        button.name = isLastLevel ? "restartButton" : "nextLevelButton"
         button.alpha = 0
         cameraNode.addChild(button)
         
         let buttonLabel = SKLabelNode(fontNamed: "Helvetica-Bold")
-        buttonLabel.text = "Next Level ▶"
-        buttonLabel.fontSize = 28
+        buttonLabel.text = isLastLevel ? "↻ Restart" : "Next Level ▶"
+        buttonLabel.fontSize = 26
         buttonLabel.fontColor = .white
         buttonLabel.verticalAlignmentMode = .center
         buttonLabel.position = button.position
         buttonLabel.zPosition = 2030
         buttonLabel.alpha = 0
+        buttonLabel.name = button.name! + "Label"
         cameraNode.addChild(buttonLabel)
         
         let fadeIn = SKAction.fadeIn(withDuration: 0.3)

@@ -39,6 +39,13 @@ class SearchableItemNode: SKSpriteNode {
     // MARK: - Placeholder
     
     private static func createPlaceholderTexture(for type: String) -> SKTexture {
+        if type == "mushroom" {
+            return createMushroomTexture()
+        }
+        return createDuckTexture()
+    }
+    
+    private static func createDuckTexture() -> SKTexture {
         let size = CGSize(width: 64, height: 64)
         
         UIGraphicsBeginImageContextWithOptions(size, false, 2.0)
@@ -103,6 +110,42 @@ class SearchableItemNode: SKSpriteNode {
         tailPath.closeSubpath()
         context.addPath(tailPath)
         context.fillPath()
+        
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return SKTexture(image: image ?? UIImage())
+    }
+    
+    private static func createMushroomTexture() -> SKTexture {
+        let size = CGSize(width: 64, height: 64)
+        
+        UIGraphicsBeginImageContextWithOptions(size, false, 2.0)
+        guard let context = UIGraphicsGetCurrentContext() else {
+            UIGraphicsEndImageContext()
+            return SKTexture()
+        }
+        
+        let centerX = size.width / 2
+        let centerY = size.height / 2
+        
+        // Mushroom cap - red with white spots
+        let capColor = UIColor(red: 0.95, green: 0.35, blue: 0.35, alpha: 1.0)
+        let capRect = CGRect(x: centerX - 24, y: centerY + 4, width: 48, height: 24)
+        context.setFillColor(capColor.cgColor)
+        context.fillEllipse(in: capRect)
+        
+        // Stem
+        let stemColor = UIColor(red: 0.95, green: 0.92, blue: 0.85, alpha: 1.0)
+        let stemRect = CGRect(x: centerX - 10, y: centerY - 18, width: 20, height: 24)
+        context.setFillColor(stemColor.cgColor)
+        context.fill(stemRect)
+        
+        // White spots on cap
+        context.setFillColor(UIColor.white.cgColor)
+        context.fillEllipse(in: CGRect(x: centerX - 14, y: centerY + 10, width: 10, height: 10))
+        context.fillEllipse(in: CGRect(x: centerX + 4, y: centerY + 8, width: 8, height: 8))
+        context.fillEllipse(in: CGRect(x: centerX - 6, y: centerY + 14, width: 6, height: 6))
         
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()

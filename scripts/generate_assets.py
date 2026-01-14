@@ -148,6 +148,20 @@ def main() -> None:
             ),
         ),
         ImageSpec(
+            name="bg_forest_evening",
+            filename="bg_forest_evening.png",
+            size=default_bg_size,
+            transparent=False,
+            prompt=(
+                "Cute kawaii forest evening scene panoramic illustration in simple cartoon style, "
+                "soft pastel colors (lavender, peach, mint, pale pink), "
+                "many small details: tiny mushrooms, cats, pandas, trees, flowers, houses, "
+                "all drawn with thick black outlines, flat colors no gradients, "
+                "2D schematic style, densely packed scene, warm sunset lighting, "
+                "children's book style, no text, no watermark"
+            ),
+        ),
+        ImageSpec(
             name="duck",
             filename="duck.png",
             size="1024x1024",
@@ -157,6 +171,19 @@ def main() -> None:
                 "very soft pastel colors (pale yellow, soft peach), "
                 "delicate thin black outline, flat colors without gradients, "
                 "2D side view profile, minimal simple shapes, subtle and gentle, "
+                "blends with pastel background, children's book style, on white background"
+            ),
+        ),
+        ImageSpec(
+            name="mushroom",
+            filename="mushroom.png",
+            size="1024x1024",
+            transparent=True,
+            prompt=(
+                "Single cute tiny mushroom in simple schematic cartoon style, "
+                "soft pastel red cap with white spots, pale cream stem, "
+                "delicate thin black outline, flat colors without gradients, "
+                "2D front view, minimal simple shapes, subtle kawaii style, "
                 "blends with pastel background, children's book style, on white background"
             ),
         ),
