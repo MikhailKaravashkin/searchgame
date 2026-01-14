@@ -167,11 +167,12 @@ def main() -> None:
             size="1024x1024",
             transparent=True,
             prompt=(
-                "Single cute tiny duck in simple schematic cartoon style, "
-                "very soft pastel colors (pale yellow, soft peach), "
-                "delicate thin black outline, flat colors without gradients, "
-                "2D side view profile, minimal simple shapes, subtle and gentle, "
-                "blends with pastel background, children's book style, on white background"
+                "Single small cute duck, kawaii style with thick black outline, "
+                "soft pastel yellow body, flat color fill no gradients, "
+                "2D side view, floating in center, "
+                "PURE WHITE BACKGROUND ONLY, no ground, no grass, no shadows, "
+                "no brush strokes, no texture, clean edges, "
+                "perfect for game sprite cutout"
             ),
         ),
         ImageSpec(
@@ -180,11 +181,12 @@ def main() -> None:
             size="1024x1024",
             transparent=True,
             prompt=(
-                "Single cute tiny mushroom in simple schematic cartoon style, "
-                "soft pastel red cap with white spots, pale cream stem, "
-                "delicate thin black outline, flat colors without gradients, "
-                "2D front view, minimal simple shapes, subtle kawaii style, "
-                "blends with pastel background, children's book style, on white background"
+                "Single small cute mushroom, kawaii style with thick black outline, "
+                "soft pastel red cap with white dots, cream stem, flat color fill no gradients, "
+                "2D front view, floating in center, "
+                "PURE WHITE BACKGROUND ONLY, no ground, no grass, no shadows, "
+                "no brush strokes, no texture, clean edges, "
+                "perfect for game sprite cutout"
             ),
         ),
     ]
